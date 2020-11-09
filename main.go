@@ -1,88 +1,46 @@
 package main
 
 import (
-	"encoding/xml"
-	"io/ioutil"
-	"strings"
-	"errors"
+	"fmt"
 	"log"
+	"strings"
 )
 
 func main() {
-	file, err := ioutil.ReadFile("./tests/MichaelMJD.xml")
+	lunduke := feeds["BryanLunduke"]
+	videosToGet, err := getVideoUpdatesForChannel(&lunduke)
+
 	if err != nil {
-		log.Fatalf("Loading RSS feed xml failed: %s", err)
+		log.Fatal(err)
 	}
 
-	var rss RSS
-	if err := xml.Unmarshal([]byte(file), &rss); err != nil {
-		log.Fatalf("JSON unmarshaling failed: %s", err)
+	var youtubeDlList []string
+	for _, entry := range *videosToGet {
+		// fmt.Printf("Title: %s, Link: %s \n\n", entry.Title, entry.Link.Href)
+		youtubeDlList = append(youtubeDlList, "\""+entry.Link.Href+"\"")
 	}
 
-	log.Println(rss.ID)
-	log.Println(rss.Title)
-	log.Println(rss.Entry)
+	downloadString := strings.Join(youtubeDlList, ", ")
+
+	fmt.Printf("youtube-dl -f best -i --write-description %s", downloadString)
 }
 
-func getVideoIDFromFileName(filename string) (string, error) {
-	parseError := errors.New("Could not parse video ID")
+func getVideoUpdatesForChannel(channel *Channel) (*[]Entry, error) {
+	rssFeed := channel.RSSURL
+	rss, err := getRSSFeed(rssFeed)
 
-	splits := strings.Split(filename, ".")
-	withoutType := splits[0]
-	id := withoutType[len(withoutType)-11:len(withoutType)] // Get last 11 chars
-
-	if id == "" {
-		return "", parseError
-	}
-
-	if len(id) != len(strings.ReplaceAll(id, " ", "")) { // This is probably not an ID
-		return "", parseError
-	}
-
-	return id, nil
-}
-
-func isEntryInVideoList(entry *Entry, videos *[]Video) bool {
-	match := false
-	for _, video := range *videos {
-		if video.ID == entry.ID {
-			match = true
-		}
-	}
-
-	return match;
-}
-
-func getEntriesNotInVideoList(entries *[]Entry, videos *[]Video) *[]Entry {
-	var notInVideoList []Entry
-	for _, entry := range *entries {
-		match := isEntryInVideoList(&entry, videos)
-		if !match { // Entry isn't in our list of videos
-			notInVideoList = append(notInVideoList, entry)
-		}
-	}
-
-	return &notInVideoList
-}
-
-func getLocalVideosByChannel(channel *Channel) *[]Video {
-	path := "/media/Drive/Videos/Youtube/" + channel.name
-	dirlist, err := ioutil.ReadDir(path)
 	if err != nil {
-		log.Fatalf("Could not get videos off disk for channel %s, error %s", channel.name, err)
+		return nil, fmt.Errorf("Loading RSS feed xml failed for %s channel. URL is %s. Error: %s", channel.Name, channel.RSSURL, err)
 	}
 
-	var videos []Video
-	for _, file := range files {
-		videoPath = path + "/" + file.Name()
-		fmt.Println(file.Name())
-		video := Video{
-			videoPath,
-			getVideoIDFromFileName(videoPath),
-		}
+	entries := rss.Entry
 
-		append(videos, video)
+	videos, err := getLocalVideosByChannel(channel)
+	if err != nil {
+		return nil, fmt.Errorf("Could not get videos off disk for channel %s, error %s", channel.Name, err)
 	}
 
-	return videos
+	entriesToDownload := getEntriesNotInVideoList(&entries, videos)
+
+	return entriesToDownload, nil
 }
