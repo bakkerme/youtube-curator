@@ -7,22 +7,41 @@ import (
 )
 
 func main() {
-	lunduke := feeds["BryanLunduke"]
-	videosToGet, err := getVideoUpdatesForChannel(&lunduke)
+	for _, chann := range feeds {
+		channelToGet := chann
 
-	if err != nil {
-		log.Fatal(err)
+		if channelToGet.ArchivalMode == ArchivalModeArchive {
+			videosToGet, err := getVideoUpdatesForChannel(&channelToGet)
+
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			fmt.Println(channelToGet.Name)
+			fmt.Printf("%d new videos available\n", len(*videosToGet))
+
+			if len(*videosToGet) > 0 {
+				command := getYoutubeDLCommandForVideoList(videosToGet)
+				fmt.Println(command)
+			}
+
+			fmt.Println("")
+		}
 	}
+}
 
+const youtubeDLBaseCommand = "youtube-dl -f best -i --write-description --add-metadata --all-subs --sub-format \"srt\" --embed-subs "
+
+func getYoutubeDLCommandForVideoList(list *[]Entry) string {
 	var youtubeDlList []string
-	for _, entry := range *videosToGet {
+	for _, entry := range *list {
 		// fmt.Printf("Title: %s, Link: %s \n\n", entry.Title, entry.Link.Href)
 		youtubeDlList = append(youtubeDlList, "\""+entry.Link.Href+"\"")
 	}
 
 	downloadString := strings.Join(youtubeDlList, ", ")
 
-	fmt.Printf("youtube-dl -f best -i --write-description %s", downloadString)
+	return youtubeDLBaseCommand + downloadString
 }
 
 func getVideoUpdatesForChannel(channel *Channel) (*[]Entry, error) {

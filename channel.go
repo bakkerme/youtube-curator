@@ -2,8 +2,10 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -34,8 +36,8 @@ var feeds = map[string]Channel{
 		"https://www.youtube.com/user/65scribe",
 		ArchivalModeArchive,
 	},
-	"ashens": Channel{
-		"ashens",
+	"Ashens": Channel{
+		"Ashens",
 		"https://www.youtube.com/feeds/videos.xml?channel_id=UCxt9Pvye-9x_AIcb1UtmF1Q",
 		"https://www.youtube.com/user/ashens",
 		ArchivalModeArchive,
@@ -74,7 +76,7 @@ var feeds = map[string]Channel{
 		"Memospore",
 		"https://www.youtube.com/feeds/videos.xml?channel_id=UChbm-JCx_jii5xn-2f5nwIA",
 		"https://www.youtube.com/user/memospore",
-		ArchivalModeArchive,
+		ArchivalModeCurated,
 	},
 	"MichaelMJD": Channel{
 		"MichaelMJD",
@@ -105,10 +107,11 @@ var feeds = map[string]Channel{
 // Given a filename of a video on disk (created with youtube-dl), grab
 // the filename from it and extract the video ID
 func getVideoIDFromFileName(filename string) (string, error) {
-	parseError := errors.New("Could not parse video ID")
+	parseError := fmt.Errorf("Could not parse video ID for video %s", filename)
 
-	splits := strings.Split(filename, ".")
-	withoutType := splits[0]
+	re := regexp.MustCompile(`(\..{3}$)`)
+	withoutType := re.ReplaceAllString(filename, "")
+
 	id := withoutType[len(withoutType)-11 : len(withoutType)] // Get last 11 chars
 
 	if id == "" {
@@ -163,19 +166,39 @@ func getLocalVideosByChannel(channel *Channel) (*[]Video, error) {
 func getLocalVideosFromDirList(dirlist *[]os.FileInfo, path string) (*[]Video, error) {
 	var videos []Video
 	for _, file := range *dirlist {
-		videoPath := path + "/" + file.Name()
-		id, err := getVideoIDFromFileName(videoPath)
-		if err != nil {
-			return &videos, err
-		}
+		isValidVideo, _ := isMP4(file.Name())
 
-		video := Video{
-			videoPath,
-			id,
-		}
+		if isValidVideo {
+			videoPath := path + "/" + file.Name()
+			id, err := getVideoIDFromFileName(videoPath)
+			if err != nil {
+				return &videos, err
+			}
 
-		videos = append(videos, video)
+			video := Video{
+				videoPath,
+				id,
+			}
+
+			videos = append(videos, video)
+		}
 	}
 
 	return &videos, nil
+}
+
+func isMP4(filename string) (bool, error) {
+	fileType, err := getFileType(filename)
+	return fileType == "mp4", err
+}
+
+func getFileType(filename string) (string, error) {
+	split := strings.Split(filename, ".")
+	final := split[len(split)-1]
+
+	if len(split) <= 1 || final == "" {
+		return "", errors.New("Invalid file type, must have extension")
+	}
+
+	return strings.ToLower(final), nil
 }

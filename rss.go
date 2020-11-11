@@ -24,7 +24,7 @@ type Link struct {
 }
 
 type Entry struct {
-	ID         string     `xml:"id"`
+	ID         string     `xml:"videoId"`
 	Title      string     `xml:"title"`
 	Link       Link       `xml:"link"`
 	Published  string     `xml:"published"`
