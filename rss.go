@@ -3,27 +3,32 @@ package main
 import (
 	"encoding/xml"
 	"fmt"
+	"time"
 	"io/ioutil"
 	"net/http"
 )
 
+// Thumbnail represents the thumbnail image of a video
 type Thumbnail struct {
 	URL    string `xml:"url,attr"`
 	Width  int    `xml:"width,attr"`
 	Height int    `xml:"height,attr"`
 }
 
+// MediaGroup contains Video metadata, like the Title, Description and Thumbnail
 type MediaGroup struct {
 	Title       string    `xml:"title"`
 	Thumbnail   Thumbnail `xml:"thumbnail"`
 	Description string    `xml:"description"`
 }
 
+// Link is the link to the video, in the youtube web interface
 type Link struct {
 	Href string `xml:"href,attr"`
 }
 
-type Entry struct {
+// VideoEntry contains information about a Video from the RSS feed
+type VideoEntry struct {
 	ID         string     `xml:"videoId"`
 	Title      string     `xml:"title"`
 	Link       Link       `xml:"link"`
@@ -32,14 +37,19 @@ type Entry struct {
 	MediaGroup MediaGroup `xml:"group"`
 }
 
+// RSS is a struct designed to contain video data from a youtube channel RSS feed
 type RSS struct {
 	ID    string  `xml:"id"`
 	Title string  `xml:"title"`
-	Entry []Entry `xml:"entry"`
+	VideoEntry []VideoEntry `xml:"entry"`
 }
 
 func getRSSFeed(url string) (*RSS, error) {
-	resp, err := http.Get(url)
+	tr := &http.Transport{
+		IdleConnTimeout:    10 * time.Second,
+	}
+	client := &http.Client{Transport: tr}
+	resp, err := client.Get(url)
 	if err != nil {
 		return nil, err
 	}

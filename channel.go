@@ -125,9 +125,9 @@ func getVideoIDFromFileName(filename string) (string, error) {
 	return id, nil
 }
 
-// Given an Entry from the RSS feed, and a list of Videos on disk,
+// Given an VideoEntry from the RSS feed, and a list of Videos on disk,
 // return the Entrys that are not represented on disk
-func isEntryInVideoList(entry *Entry, videos *[]Video) bool {
+func isEntryInVideoList(entry *VideoEntry, videos *[]Video) bool {
 	match := false
 	for _, video := range *videos {
 		if video.ID == entry.ID {
@@ -140,11 +140,11 @@ func isEntryInVideoList(entry *Entry, videos *[]Video) bool {
 
 // Given a list of Entries from the RSS feed and Videos on disk, return
 // the Entries that don't appear as a Video on disk
-func getEntriesNotInVideoList(entries *[]Entry, videos *[]Video) *[]Entry {
-	var notInVideoList []Entry
+func getEntriesNotInVideoList(entries *[]VideoEntry, videos *[]Video) *[]VideoEntry {
+	var notInVideoList []VideoEntry
 	for _, entry := range *entries {
 		match := isEntryInVideoList(&entry, videos)
-		if !match { // Entry isn't in our list of videos
+		if !match { // VideoEntry isn't in our list of videos
 			notInVideoList = append(notInVideoList, entry)
 		}
 	}

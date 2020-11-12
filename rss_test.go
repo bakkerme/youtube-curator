@@ -10,8 +10,8 @@ func TestConvertRSSStringToRSS(t *testing.T) {
 	rssExpect := RSS{
 		"yt:channel:UCS-WzPVpAAli-1IfEG2lN8A",
 		"Test Guy",
-		[]Entry{
-			Entry{
+		[]VideoEntry{
+			VideoEntry{
 				"KQA9Na4aOa1",
 				"Test Video New",
 				Link{
@@ -29,7 +29,7 @@ func TestConvertRSSStringToRSS(t *testing.T) {
 					"Test Description New",
 				},
 			},
-			Entry{
+			VideoEntry{
 				"OGK8gnP4TfA",
 				"Test Video 1",
 				Link{
@@ -47,7 +47,7 @@ func TestConvertRSSStringToRSS(t *testing.T) {
 					"Test Description",
 				},
 			},
-			Entry{
+			VideoEntry{
 				"FazJqPQ6xSs",
 				"Test Video 2",
 				Link{

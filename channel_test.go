@@ -58,11 +58,11 @@ func TestGetEntriesNotInVideoListWithMatch(t *testing.T) {
 	thumbnail := Thumbnail{"", 0, 0}
 	mediaGroup := MediaGroup{"", thumbnail, ""}
 
-	outstandingEntry := Entry{"wxyzabcdefg", "Video 4", Link{"http://link4"}, "", "", mediaGroup}
-	entries := []Entry{
-		Entry{"12345678911", "Video 1", Link{"http://link"}, "", "", mediaGroup},
-		Entry{"abcdefghijk", "Video 2", Link{"http://link2"}, "", "", mediaGroup},
-		Entry{"lmnopqrxtuv", "Video 3", Link{"http://link3"}, "", "", mediaGroup},
+	outstandingEntry := VideoEntry{"wxyzabcdefg", "Video 4", Link{"http://link4"}, "", "", mediaGroup}
+	entries := []VideoEntry{
+		VideoEntry{"12345678911", "Video 1", Link{"http://link"}, "", "", mediaGroup},
+		VideoEntry{"abcdefghijk", "Video 2", Link{"http://link2"}, "", "", mediaGroup},
+		VideoEntry{"lmnopqrxtuv", "Video 3", Link{"http://link3"}, "", "", mediaGroup},
 		outstandingEntry,
 	}
 
@@ -83,10 +83,10 @@ func TestGetEntriesNotInVideoListWithNoMatch(t *testing.T) {
 	thumbnail := Thumbnail{"", 0, 0}
 	mediaGroup := MediaGroup{"", thumbnail, ""}
 
-	entries := []Entry{
-		Entry{"12345678911", "Video 1", Link{"http://link"}, "", "", mediaGroup},
-		Entry{"abcdefghijk", "Video 2", Link{"http://link2"}, "", "", mediaGroup},
-		Entry{"lmnopqrxtuv", "Video 3", Link{"http://link3"}, "", "", mediaGroup},
+	entries := []VideoEntry{
+		VideoEntry{"12345678911", "Video 1", Link{"http://link"}, "", "", mediaGroup},
+		VideoEntry{"abcdefghijk", "Video 2", Link{"http://link2"}, "", "", mediaGroup},
+		VideoEntry{"lmnopqrxtuv", "Video 3", Link{"http://link3"}, "", "", mediaGroup},
 	}
 
 	videos := []Video{
@@ -106,10 +106,10 @@ func TestGetEntriesNotInVideoListWithNoVideoList(t *testing.T) {
 	thumbnail := Thumbnail{"", 0, 0}
 	mediaGroup := MediaGroup{"", thumbnail, ""}
 
-	entries := []Entry{
-		Entry{"12345678911", "Video 1", Link{"http://link"}, "", "", mediaGroup},
-		Entry{"abcdefghijk", "Video 2", Link{"http://link2"}, "", "", mediaGroup},
-		Entry{"lmnopqrxtuv", "Video 3", Link{"http://link3"}, "", "", mediaGroup},
+	entries := []VideoEntry{
+		VideoEntry{"12345678911", "Video 1", Link{"http://link"}, "", "", mediaGroup},
+		VideoEntry{"abcdefghijk", "Video 2", Link{"http://link2"}, "", "", mediaGroup},
+		VideoEntry{"lmnopqrxtuv", "Video 3", Link{"http://link3"}, "", "", mediaGroup},
 	}
 
 	videos := []Video{}
@@ -122,7 +122,7 @@ func TestGetEntriesNotInVideoListWithNoVideoList(t *testing.T) {
 }
 
 func TestGetEntriesNotInVideoListWithNoEntries(t *testing.T) {
-	entries := []Entry{}
+	entries := []VideoEntry{}
 
 	videos := []Video{
 		Video{"Video 1-12345678911.mp4", "12345678911"},
@@ -140,7 +140,7 @@ func TestGetEntriesNotInVideoListWithNoEntries(t *testing.T) {
 func TestIsEntryInVideoListWithMatch(t *testing.T) {
 	thumbnail := Thumbnail{"", 0, 0}
 	mediaGroup := MediaGroup{"", thumbnail, ""}
-	entry := Entry{"12345678911", "Video 1", Link{"http://link"}, "", "", mediaGroup}
+	entry := VideoEntry{"12345678911", "Video 1", Link{"http://link"}, "", "", mediaGroup}
 
 	videos := []Video{
 		Video{"Video 1-12345678911.mp4", "12345678911"},
@@ -149,14 +149,14 @@ func TestIsEntryInVideoListWithMatch(t *testing.T) {
 	}
 
 	if !isEntryInVideoList(&entry, &videos) {
-		t.Error("Entry should have been found in video list")
+		t.Error("VideoEntry should have been found in video list")
 	}
 }
 
 func TestIsEntryInVideoListWithNoMatch(t *testing.T) {
 	thumbnail := Thumbnail{"", 0, 0}
 	mediaGroup := MediaGroup{"", thumbnail, ""}
-	entry := Entry{"BADID123456", "Video 1", Link{"http://link"}, "", "", mediaGroup}
+	entry := VideoEntry{"BADID123456", "Video 1", Link{"http://link"}, "", "", mediaGroup}
 
 	videos := []Video{
 		Video{"Video 1-12345678911.mp4", "12345678911"},
@@ -165,19 +165,19 @@ func TestIsEntryInVideoListWithNoMatch(t *testing.T) {
 	}
 
 	if isEntryInVideoList(&entry, &videos) {
-		t.Error("Entry should not have been found in video list")
+		t.Error("VideoEntry should not have been found in video list")
 	}
 }
 
 func TestIsEntryInVideoListWithEmptyVideoList(t *testing.T) {
 	thumbnail := Thumbnail{"", 0, 0}
 	mediaGroup := MediaGroup{"", thumbnail, ""}
-	entry := Entry{"BADID123456", "Video 1", Link{"http://link"}, "", "", mediaGroup}
+	entry := VideoEntry{"BADID123456", "Video 1", Link{"http://link"}, "", "", mediaGroup}
 
 	videos := []Video{}
 
 	if isEntryInVideoList(&entry, &videos) {
-		t.Error("Entry should not have been found in video list")
+		t.Error("VideoEntry should not have been found in video list")
 	}
 }
 
