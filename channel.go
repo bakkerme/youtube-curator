@@ -9,8 +9,8 @@ import (
 	"strings"
 )
 
-// Channel is a struct that represents the configuration for each channel archived
-type Channel struct {
+// YTChannel is a struct that represents the configuration for each channel archived
+type YTChannel struct {
 	Name         string
 	RSSURL       string
 	ChannelURL   string
@@ -29,74 +29,74 @@ const ArchivalModeArchive = "archive"
 // ArchivalModeCurated specifies that only selected videos are to be archived
 const ArchivalModeCurated = "curated"
 
-var feeds = map[string]Channel{
-	"65scribe": Channel{
+var feeds = map[string]YTChannel{
+	"65scribe": YTChannel{
 		"65scribe",
 		"https://www.youtube.com/feeds/videos.xml?channel_id=UC8dJOqcjyiA9Zo9aOxxiCMw",
 		"https://www.youtube.com/user/65scribe",
 		ArchivalModeArchive,
 	},
-	"Ashens": Channel{
+	"Ashens": YTChannel{
 		"Ashens",
 		"https://www.youtube.com/feeds/videos.xml?channel_id=UCxt9Pvye-9x_AIcb1UtmF1Q",
 		"https://www.youtube.com/user/ashens",
 		ArchivalModeArchive,
 	},
-	"BryanLunduke": Channel{
+	"BryanLunduke": YTChannel{
 		"BryanLunduke",
 		"https://www.youtube.com/feeds/videos.xml?channel_id=UCkK9UDm_ZNrq_rIXCz3xCGA",
 		"https://www.youtube.com/user/bryanlunduke",
 		ArchivalModeArchive,
 	},
-	"DanBell": Channel{
+	"DanBell": YTChannel{
 		"DanBell",
 		"https://www.youtube.com/feeds/videos.xml?playlist_id=PLNz4Un92pGNxQ9vNgmnCx7dwchPJGJ3IQ",
 		"https://www.youtube.com/user/moviedan",
 		ArchivalModeArchive,
 	},
-	"LinusTechTips": Channel{
+	"LinusTechTips": YTChannel{
 		"LinusTechTips",
 		"https://www.youtube.com/feeds/videos.xml?channel_id=UCXuqSBlHAE6Xw-yeJA0Tunw",
 		"https://www.youtube.com/user/LinusTechTips",
 		ArchivalModeCurated,
 	},
-	"LukeSmith": Channel{
+	"LukeSmith": YTChannel{
 		"LukeSmith",
 		"https://www.youtube.com/feeds/videos.xml?channel_id=UC2eYFnH61tmytImy1mTYvhA",
 		"https://www.youtube.com/channel/UC2eYFnH61tmytImy1mTYvhA",
 		ArchivalModeArchive,
 	},
-	"Mario64BetaArchive": Channel{
+	"Mario64BetaArchive": YTChannel{
 		"Mario64BetaArchive",
 		"https://www.youtube.com/feeds/videos.xml?channel_id=UCSar92RCPocysNbvBG84Mxw",
 		"https://www.youtube.com/channel/UCSar92RCPocysNbvBG84Mxw",
 		ArchivalModeArchive,
 	},
-	"Memospore": Channel{
+	"Memospore": YTChannel{
 		"Memospore",
 		"https://www.youtube.com/feeds/videos.xml?channel_id=UChbm-JCx_jii5xn-2f5nwIA",
 		"https://www.youtube.com/user/memospore",
 		ArchivalModeCurated,
 	},
-	"MichaelMJD": Channel{
+	"MichaelMJD": YTChannel{
 		"MichaelMJD",
 		"https://www.youtube.com/feeds/videos.xml?channel_id=UCS-WzPVpAAli-1IfEG2lN8A",
 		"https://www.youtube.com/user/mjd7999",
 		ArchivalModeArchive,
 	},
-	"RedLetterMedia": Channel{
+	"RedLetterMedia": YTChannel{
 		"RedLetterMedia",
 		"https://www.youtube.com/feeds/videos.xml?channel_id=UCrTNhL_yO3tPTdQ5XgmmWjA",
 		"https://www.youtube.com/user/RedLetterMedia",
 		ArchivalModeCurated,
 	},
-	"SurviveTheJive": Channel{
+	"SurviveTheJive": YTChannel{
 		"SurviveTheJive",
 		"https://www.youtube.com/feeds/videos.xml?channel_id=UCZAENaOaceQUMd84GDc26EA",
 		"https://www.youtube.com/user/ThomasRowsell",
 		ArchivalModeArchive,
 	},
-	"TechnologyConnections": Channel{
+	"TechnologyConnections": YTChannel{
 		"TechnologyConnections",
 		"https://www.youtube.com/feeds/videos.xml?channel_id=UCy0tKL1T7wFoYcxCe0xjN6Q",
 		"https://www.youtube.com/channel/UCy0tKL1T7wFoYcxCe0xjN6Q",
@@ -152,8 +152,8 @@ func getEntriesNotInVideoList(entries *[]Entry, videos *[]Video) *[]Entry {
 	return &notInVideoList
 }
 
-// Given a Channel, return the Videos on disk that are under that Channel
-func getLocalVideosByChannel(channel *Channel) (*[]Video, error) {
+// Given a YTChannel, return the Videos on disk that are under that YTChannel
+func getLocalVideosByYTChannel(channel *YTChannel) (*[]Video, error) {
 	path := "/media/Drive/Videos/Youtube/" + channel.Name
 	dirlist, err := ioutil.ReadDir(path)
 	if err != nil {
