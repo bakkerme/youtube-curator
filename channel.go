@@ -42,6 +42,12 @@ var feeds = map[string]YTChannel{
 		"https://www.youtube.com/user/ashens",
 		ArchivalModeArchive,
 	},
+	"AudioPilz": YTChannel{
+		"AudioPilz",
+		"https://www.youtube.com/feeds/videos.xml?channel_id=UCOJVsjPZcE9HxsgPKCxZfAg",
+		"https://www.youtube.com/channel/UCOJVsjPZcE9HxsgPKCxZfAg",
+		ArchivalModeArchive,
+	},
 	"BryanLunduke": YTChannel{
 		"BryanLunduke",
 		"https://www.youtube.com/feeds/videos.xml?channel_id=UCkK9UDm_ZNrq_rIXCz3xCGA",

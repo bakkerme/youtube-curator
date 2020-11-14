@@ -4,10 +4,15 @@ import (
 	"fmt"
 )
 
+type ytChannelEntryResult struct {
+	Entries *[]VideoEntry
+	Error   error
+}
+
 func main() {
 	ch := make(chan ytChannelEntryResult)
 	for _, chann := range feeds {
-		go func (channelToGet YTChannel) {
+		go func(channelToGet YTChannel) {
 			videosToGet, err := getVideoUpdatesForYTChannel(&channelToGet)
 			ch <- ytChannelEntryResult{videosToGet, err}
 		}(chann)
@@ -26,21 +31,16 @@ func main() {
 		fmt.Printf("%d new videos available\n", len(*videosToGet))
 
 		if len(*videosToGet) > 0 {
-			if channelToGet.ArchivalMode == ArchivalModeCurated {
-				command := getYoutubeDLCommandForVideoList(&channelToGet, videosToGet)
-				fmt.Println(command)
-			} else if channelToGet.ArchivalMode == ArchivalModeArchive {
-				fmt.Println(getYoutubeDLCommandForYTChannel(&channelToGet, ""), channelToGet.ChannelURL)
+			command, err := getCommandForArchivalType(&channelToGet, videosToGet)
+			if err != nil {
+				fmt.Println(err)
 			}
+
+			fmt.Println(command)
 		}
 
 		fmt.Println("")
 	}
-}
-
-type ytChannelEntryResult struct {
-	Entries *[]VideoEntry
-	Error   error
 }
 
 func getVideoUpdatesForYTChannel(ytc *YTChannel) (*[]VideoEntry, error) {
