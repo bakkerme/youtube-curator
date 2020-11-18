@@ -60,6 +60,12 @@ var feeds = map[string]YTChannel{
 		"https://www.youtube.com/user/moviedan",
 		ArchivalModeArchive,
 	},
+	"LGR": YTChannel{
+		"LGR",
+		"https://www.youtube.com/feeds/videos.xml?channel_id=UCLx053rWZxCiYWsBETgdKrQ",
+		"https://www.youtube.com/channel/UCLx053rWZxCiYWsBETgdKrQ",
+		ArchivalModeCurated,
+	},
 	"LinusTechTips": YTChannel{
 		"LinusTechTips",
 		"https://www.youtube.com/feeds/videos.xml?channel_id=UCXuqSBlHAE6Xw-yeJA0Tunw",

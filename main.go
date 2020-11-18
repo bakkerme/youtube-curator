@@ -5,6 +5,7 @@ import (
 )
 
 type ytChannelEntryResult struct {
+	Channel *YTChannel
 	Entries *[]VideoEntry
 	Error   error
 }
@@ -14,13 +15,14 @@ func main() {
 	for _, chann := range feeds {
 		go func(channelToGet YTChannel) {
 			videosToGet, err := getVideoUpdatesForYTChannel(&channelToGet)
-			ch <- ytChannelEntryResult{videosToGet, err}
+			ch <- ytChannelEntryResult{&channelToGet, videosToGet, err}
 		}(chann)
 	}
 
-	for _, channelToGet := range feeds {
+	for range feeds {
 		result := <-ch
 		videosToGet := result.Entries
+		channelToGet := result.Channel
 		err := result.Error
 
 		if err != nil {
@@ -31,7 +33,7 @@ func main() {
 		fmt.Printf("%d new videos available\n", len(*videosToGet))
 
 		if len(*videosToGet) > 0 {
-			command, err := getCommandForArchivalType(&channelToGet, videosToGet)
+			command, err := getCommandForArchivalType(channelToGet, videosToGet)
 			if err != nil {
 				fmt.Println(err)
 			}
