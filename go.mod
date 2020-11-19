@@ -9,3 +9,7 @@ replace config => ./config
 require youtubeapi v1.0.0
 
 replace youtubeapi => ./youtubeapi
+
+require utils v1.0.0
+
+replace utils => ./utils
