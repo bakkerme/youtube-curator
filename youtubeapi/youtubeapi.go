@@ -1,10 +1,10 @@
 package youtubeapi
 
 import (
-	"config"
 	"fmt"
+	"hyperfocus.systems/youtube-curator-server/config"
+	"hyperfocus.systems/youtube-curator-server/utils"
 	"strings"
-	"utils"
 )
 
 func getAccessKey(cf *config.Config) string {
@@ -22,17 +22,17 @@ func getVideoInfoURL(id string, accessKey string) string {
 	return baseURL + strings.Join(values, "&")
 }
 
-func getVideoInfo(id string, cf *config.Config) (*VideoListResponse, error) {
+func getVideoInfo(id string, cf *config.Config, httpClient utils.YTCHTTPClient) (*VideoListResponse, error) {
 	url := getVideoInfoURL(id, getAccessKey(cf))
 
-	resp, body, err := utils.HTTPGet(url, utils.DefaultHTTPTimeout)
+	resp, body, err := httpClient.Get(url)
 
 	if err != nil {
 		return nil, fmt.Errorf("Returned invalid response for video Id %s, URL was %s. Error: %s", id, url, err)
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Call for video ID %s with URL %s did not return 200. Returned %d", id, url, resp.StatusCode)
+		return nil, fmt.Errorf("Call for video ID %s with URL %s did not return 200. Returned %d. Body was %s", id, url, resp.StatusCode, body)
 	}
 
 	videoResponse, err := convertVideoAPIResponse(string(body))
@@ -42,4 +42,9 @@ func getVideoInfo(id string, cf *config.Config) (*VideoListResponse, error) {
 	}
 
 	return videoResponse, nil
+}
+
+// GetVideoInfo gets the video information for the provided ID from the Youtube API
+func GetVideoInfo(id string, cf *config.Config) (*VideoListResponse, error) {
+	return getVideoInfo(id, cf, &utils.HTTPClient{})
 }

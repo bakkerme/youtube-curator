@@ -6,21 +6,39 @@ import (
 	"time"
 )
 
+// YTCHTTPClient a HTTP client with timeout
+type YTCHTTPClient interface {
+	Get(url string) (*http.Response, []byte, error)
+	// Post(url string, body []string, timeout time.Duration)
+}
+
 // DefaultHTTPTimeout provides the default HTTP request timeout value
 var DefaultHTTPTimeout = 10 * time.Second
 
-// HTTPGet is a simplified Get with a configurable timeout value.
+// HTTPClient is an implementation of the YTCHTTPClient interface for http requets
+// with modifications specific to this project
+type HTTPClient struct {
+	ConnTimeout time.Duration
+}
+
+// Get is a simplified Get with a configurable timeout value.
 // You can provide the default package timeout by using DefaultHTTPTimeout as the timeout
 // value
-func HTTPGet(url string, timeout time.Duration) (*http.Response, []byte, error) {
+func (ht *HTTPClient) Get(url string) (*http.Response, []byte, error) {
 	tr := &http.Transport{
-		IdleConnTimeout: timeout,
+		IdleConnTimeout: ht.ConnTimeout,
 	}
 	client := &http.Client{Transport: tr}
-	resp, err := client.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, nil, err
 	}
+	req.Header.Set("Accept", "application/json")
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
