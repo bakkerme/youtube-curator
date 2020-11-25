@@ -1,4 +1,4 @@
-module hyperfocus.systems/youtube-curator-server/tools
+module hyperfocus.systems/youtube-curator-server/up2date
 
 go 1.15
 
@@ -12,7 +12,7 @@ replace hyperfocus.systems/youtube-curator-server/youtubeapi => ../youtubeapi
 
 require hyperfocus.systems/youtube-curator-server/youtubedl v1.0.0
 
-replace hyperfocus.systems/youtube-curator-server/youtubedl => ../youtubedl
+replace hyperfocus.systems/youtube-curator-server/youtubedl => ../youtubeapi
 
 require hyperfocus.systems/youtube-curator-server/utils v1.0.0
 

@@ -1,4 +1,4 @@
-package main
+package youtubedl
 
 import (
 	"fmt"
@@ -41,7 +41,8 @@ func getYoutubeDLCommandForVideoList(chann *YTChannel, list *[]VideoEntry) strin
 	return getYoutubeDLCommandForYTChannel(chann, downloadString)
 }
 
-func getCommandForArchivalType(ytchan *YTChannel, videos *[]VideoEntry) (string, error) {
+// GetCommandForArchivalType provides a YoutubeDL command for a YTChannel to download a number of VideoEntrys
+func GetCommandForArchivalType(ytchan *YTChannel, videos *[]VideoEntry) (string, error) {
 	if ytchan.ArchivalMode == ArchivalModeCurated {
 		return getYoutubeDLCommandForVideoList(ytchan, videos), nil
 	} else if ytchan.ArchivalMode == ArchivalModeArchive {

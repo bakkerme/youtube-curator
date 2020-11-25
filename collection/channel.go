@@ -1,8 +1,9 @@
-package main
+package collection
 
 import (
 	"errors"
 	"fmt"
+	"hyperfocus.systems/youtube-curator-server/youtubeapi"
 	"io/ioutil"
 	"os"
 	"regexp"
@@ -29,7 +30,8 @@ const ArchivalModeArchive = "archive"
 // ArchivalModeCurated specifies that only selected videos are to be archived
 const ArchivalModeCurated = "curated"
 
-var feeds = map[string]YTChannel{
+// Feeds is a collection of YTChannel configs for videos on disk
+var Feeds = map[string]YTChannel{
 	"65scribe": YTChannel{
 		"65scribe",
 		"https://www.youtube.com/feeds/videos.xml?channel_id=UC8dJOqcjyiA9Zo9aOxxiCMw",
@@ -116,6 +118,20 @@ var feeds = map[string]YTChannel{
 	},
 }
 
+// GetEntriesNotInVideoList is given a list of Entries from the RSS feed and Videos on disk, return
+// the Entries that don't appear as a Video on disk
+func GetEntriesNotInVideoList(entries *[]youtubeapi.RSSVideoEntry, videos *[]Video) *[]youtubeapi.RSSVideoEntry {
+	var notInVideoList []youtubeapi.RSSVideoEntry
+	for _, entry := range *entries {
+		match := isEntryInVideoList(&entry, videos)
+		if !match { // RSSVideoEntry isn't in our list of videos
+			notInVideoList = append(notInVideoList, entry)
+		}
+	}
+
+	return &notInVideoList
+}
+
 // Given a filename of a video on disk (created with youtube-dl), grab
 // the filename from it and extract the video ID
 func getVideoIDFromFileName(filename string) (string, error) {
@@ -137,9 +153,9 @@ func getVideoIDFromFileName(filename string) (string, error) {
 	return id, nil
 }
 
-// Given an VideoEntry from the RSS feed, and a list of Videos on disk,
+// Given an RSSVideoEntry from the RSS feed, and a list of Videos on disk,
 // return the Entrys that are not represented on disk
-func isEntryInVideoList(entry *VideoEntry, videos *[]Video) bool {
+func isEntryInVideoList(entry *youtubeapi.RSSVideoEntry, videos *[]Video) bool {
 	match := false
 	for _, video := range *videos {
 		if video.ID == entry.ID {
@@ -150,22 +166,8 @@ func isEntryInVideoList(entry *VideoEntry, videos *[]Video) bool {
 	return match
 }
 
-// Given a list of Entries from the RSS feed and Videos on disk, return
-// the Entries that don't appear as a Video on disk
-func getEntriesNotInVideoList(entries *[]VideoEntry, videos *[]Video) *[]VideoEntry {
-	var notInVideoList []VideoEntry
-	for _, entry := range *entries {
-		match := isEntryInVideoList(&entry, videos)
-		if !match { // VideoEntry isn't in our list of videos
-			notInVideoList = append(notInVideoList, entry)
-		}
-	}
-
-	return &notInVideoList
-}
-
-// Given a YTChannel, return the Videos on disk that are under that YTChannel
-func getLocalVideosByYTChannel(channel *YTChannel) (*[]Video, error) {
+// GetLocalVideosByYTChannel is given a YTChannel, return the Videos on disk that are under that YTChannel
+func GetLocalVideosByYTChannel(channel *YTChannel) (*[]Video, error) {
 	path := "/media/Drive/Videos/Youtube/" + channel.Name
 	dirlist, err := ioutil.ReadDir(path)
 	if err != nil {

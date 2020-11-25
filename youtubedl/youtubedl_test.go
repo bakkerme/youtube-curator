@@ -1,4 +1,4 @@
-package main
+package youtubedl
 
 import (
 	"fmt"
@@ -94,7 +94,7 @@ func TestCommandForArchivalType(t *testing.T) {
 			ArchivalModeArchive,
 		}
 
-		result, err := getCommandForArchivalType(&ytchannel, &videoEntries)
+		result, err := GetCommandForArchivalType(&ytchannel, &videoEntries)
 		if err != nil {
 			t.Error(err)
 		}
@@ -113,7 +113,7 @@ func TestCommandForArchivalType(t *testing.T) {
 			ArchivalModeCurated,
 		}
 
-		result, err := getCommandForArchivalType(&ytchannel, &videoEntries)
+		result, err := GetCommandForArchivalType(&ytchannel, &videoEntries)
 		if err != nil {
 			t.Error(err)
 		}

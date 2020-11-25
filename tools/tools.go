@@ -2,10 +2,17 @@ package main
 
 import (
 	"fmt"
+	"hyperfocus.systems/youtube-curator-server/collection"
 	"hyperfocus.systems/youtube-curator-server/config"
 	"hyperfocus.systems/youtube-curator-server/youtubeapi"
 	"log"
+	"strings"
 )
+
+func convertISODateToSimpleDateString(isoDateString string) string {
+	split := strings.Split(isoDateString, "T")
+	return strings.ReplaceAll(split[0], "-", "")
+}
 
 func main() {
 	config, err := config.GetConfig(&config.EnvarConfigProvider{})
@@ -13,11 +20,31 @@ func main() {
 		log.Panicf("Config Loader threw an error %s", err)
 	}
 
-	id := "UiS27feX8o0"
-	video, err := youtubeapi.GetVideoInfo(id, config)
+	v65scribe := collection.Feeds["65scribe"]
+	videos, err := collection.GetLocalVideosByYTChannel(&v65scribe)
 	if err != nil {
-		panic(fmt.Sprintf("Could not get video of id %s, %s", id, err))
+		log.Panicf("Could not get local videos, error %s", err)
 	}
 
-	fmt.Println(video)
+	var ids []string
+	for _, video := range *videos {
+		ids = append(ids, video.ID)
+	}
+
+	videoList, err := youtubeapi.GetVideoInfo(&ids, config)
+	if err != nil {
+		panic(fmt.Sprintf("Could not get video of id %s, %s", ids, err))
+	}
+
+	if videoList.NextPageToken != "" {
+		panic(fmt.Sprint("Next Page!!!! %s of %s per page", videoList.PageInfo.TotalResults, videoList.PageInfo.ResultsPerPage))
+	}
+
+	for _, video := range videoList.Items {
+		fmt.Println(video.Snippet.Title)
+		fmt.Println(convertISODateToSimpleDateString(video.Snippet.PublishedAt))
+		fmt.Println("")
+	}
+
+	// fmt.Println(videoList)
 }

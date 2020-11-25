@@ -1,4 +1,4 @@
-package main
+package collection
 
 import (
 	"os"
@@ -83,7 +83,7 @@ func TestGetEntriesNotInVideoList(t *testing.T) {
 			Video{"Video 3-lmnopqrxtuv.mp4", "lmnopqrxtuv"},
 		}
 
-		entriesToGet := getEntriesNotInVideoList(&entries, &videos)
+		entriesToGet := GetEntriesNotInVideoList(&entries, &videos)
 
 		if (*entriesToGet)[0] != outstandingEntry {
 			t.Errorf("The outstanding entry not in the video list is incorrect, got %s, expected %s", (*entriesToGet)[0].ID, outstandingEntry.ID)
@@ -106,7 +106,7 @@ func TestGetEntriesNotInVideoList(t *testing.T) {
 			Video{"Video 3-lmnopqrxtuv.mp4", "lmnopqrxtuv"},
 		}
 
-		entriesToGet := getEntriesNotInVideoList(&entries, &videos)
+		entriesToGet := GetEntriesNotInVideoList(&entries, &videos)
 
 		if len(*entriesToGet) > 0 {
 			t.Errorf("Unknown match was found, got %s", (*entriesToGet)[0].ID)
@@ -125,7 +125,7 @@ func TestGetEntriesNotInVideoList(t *testing.T) {
 
 		videos := []Video{}
 
-		entriesToGet := getEntriesNotInVideoList(&entries, &videos)
+		entriesToGet := GetEntriesNotInVideoList(&entries, &videos)
 
 		if len(*entriesToGet) != 3 {
 			t.Errorf("Matches were not correctly found")
@@ -141,7 +141,7 @@ func TestGetEntriesNotInVideoList(t *testing.T) {
 			Video{"Video 3-lmnopqrxtuv.mp4", "lmnopqrxtuv"},
 		}
 
-		entriesToGet := getEntriesNotInVideoList(&entries, &videos)
+		entriesToGet := GetEntriesNotInVideoList(&entries, &videos)
 
 		if len(*entriesToGet) > 0 {
 			t.Errorf("Unknown match was found, got %s", (*entriesToGet)[0].ID)

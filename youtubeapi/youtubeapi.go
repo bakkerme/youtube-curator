@@ -11,10 +11,10 @@ func getAccessKey(cf *config.Config) string {
 	return cf.YoutubeAPIKey
 }
 
-func getVideoInfoURL(id string, accessKey string) string {
+func getVideoInfoURL(ids *[]string, accessKey string) string {
 	values := []string{
 		"part=snippet",
-		"id=" + id,
+		"id=" + strings.Join(*ids, ","),
 		"key=" + accessKey,
 	}
 
@@ -22,29 +22,29 @@ func getVideoInfoURL(id string, accessKey string) string {
 	return baseURL + strings.Join(values, "&")
 }
 
-func getVideoInfo(id string, cf *config.Config, httpClient utils.YTCHTTPClient) (*VideoListResponse, error) {
-	url := getVideoInfoURL(id, getAccessKey(cf))
+func getVideoInfo(ids *[]string, cf *config.Config, httpClient utils.YTCHTTPClient) (*VideoListResponse, error) {
+	url := getVideoInfoURL(ids, getAccessKey(cf))
 
 	resp, body, err := httpClient.Get(url)
 
 	if err != nil {
-		return nil, fmt.Errorf("Returned invalid response for video Id %s, URL was %s. Error: %s", id, url, err)
+		return nil, fmt.Errorf("Returned invalid response for video Id %s, URL was %s. Error: %s", ids, url, err)
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Call for video ID %s with URL %s did not return 200. Returned %d. Body was %s", id, url, resp.StatusCode, body)
+		return nil, fmt.Errorf("Call for video ID %s with URL %s did not return 200. Returned %d. Body was %s", ids, url, resp.StatusCode, body)
 	}
 
 	videoResponse, err := convertVideoAPIResponse(string(body))
 
 	if err != nil {
-		return nil, fmt.Errorf("Could not parse response from Youtube API for video ID %s, address %s. Responsed with %s", id, url, body)
+		return nil, fmt.Errorf("Could not parse response from Youtube API for video ID %s, address %s. Responsed with %s", ids, url, body)
 	}
 
 	return videoResponse, nil
 }
 
-// GetVideoInfo gets the video information for the provided ID from the Youtube API
-func GetVideoInfo(id string, cf *config.Config) (*VideoListResponse, error) {
-	return getVideoInfo(id, cf, &utils.HTTPClient{})
+// GetVideoInfo gets information on the video whos IDs are provided from the Youtube API
+func GetVideoInfo(ids *[]string, cf *config.Config) (*VideoListResponse, error) {
+	return getVideoInfo(ids, cf, &utils.HTTPClient{})
 }
