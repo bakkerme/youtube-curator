@@ -206,6 +206,11 @@ func isMP4(filename string) (bool, error) {
 	return fileType == "mp4", err
 }
 
+func isMKV(filename string) (bool, error) {
+	fileType, err := getFileType(filename)
+	return fileType == "mkv", err
+}
+
 func getFileType(filename string) (string, error) {
 	split := strings.Split(filename, ".")
 	final := split[len(split)-1]
