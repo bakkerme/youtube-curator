@@ -1,0 +1,124 @@
++ EBML head
+|+ EBML version: 1
+|+ EBML read version: 1
+|+ Maximum EBML ID length: 4
+|+ Maximum EBML size length: 8
+|+ Document type: matroska
+|+ Document type version: 4
+|+ Document type read version: 2
++ Segment: size 2200759771
+|+ Seek head (subentries will be skipped)
+|+ EBML void: size 80
+|+ Segment information
+| + Timestamp scale: 1000000
+| + Multiplexing application: Lavf58.45.100
+| + Writing application: Lavf58.45.100
+| + Segment UID: 0x39 0x1f 0x0d 0x68 0x57 0x14 0xe6 0xeb 0xb6 0xa3 0xe2 0x5e 0x07 0x83 0x83 0x9f
+| + Duration: 00:28:12.563000000
+|+ Tracks
+| + Track
+|  + Track number: 1 (track ID for mkvmerge & mkvextract: 0)
+|  + Track UID: 14335030952918840546
+|  + Lacing flag: 0
+|  + Language: und
+|  + Codec ID: V_AV1
+|  + Track type: video
+|  + Default duration: 00:00:00.033366666 (29.970 frames/fields per second for a video track)
+|  + Video track
+|   + Pixel width: 3840
+|   + Pixel height: 2160
+|   + Display unit: 4
+|   + Video colour information
+|    + Colour transfer: 1
+|    + Colour matrix coefficients: 1
+|    + Colour primaries: 1
+|    + Colour range: 1
+|  + Codec's private data: size 21
+| + Track
+|  + Track number: 2 (track ID for mkvmerge & mkvextract: 1)
+|  + Track UID: 2187085546731769069
+|  + Lacing flag: 0
+|  + Language: eng
+|  + Codec ID: A_OPUS
+|  + Codec-inherent delay: 00:00:00.006500000
+|  + Seek pre-roll: 00:00:00.080000000
+|  + Track type: audio
+|  + Audio track
+|   + Channels: 2
+|   + Sampling frequency: 48000.0
+|   + Bit depth: 32
+|  + Codec's private data: size 19
+| + Track
+|  + Track number: 3 (track ID for mkvmerge & mkvextract: 2)
+|  + Track UID: 3963375468228444293
+|  + Lacing flag: 0
+|  + Language: eng
+|  + Codec ID: D_WEBVTT/SUBTITLES
+|  + Track type: subtitles
+|+ Tags
+| + Tag
+|  + Targets
+|  + Simple
+|   + Name: PURL
+|   + String: https://www.youtube.com/watch?v=r_uBHmAhnfo
+|  + Simple
+|   + Name: COMPATIBLE_BRANDS
+|   + String: iso6av01mp41
+|  + Simple
+|   + Name: MAJOR_BRAND
+|   + String: dash
+|  + Simple
+|   + Name: MINOR_VERSION
+|   + String: 0
+|  + Simple
+|   + Name: ARTIST
+|   + String: Technology Connections
+|  + Simple
+|   + Name: DATE
+|   + String: 20201030
+|  + Simple
+|   + Name: DESCRIPTION
+|   + String: Ever wonder how pro cameras from the 1970's worked? Learn about their single most important tool for the photographer (and lots else!) in this exposé.
+Strings of text which take you places!
+|  + Simple
+|   + Name: COMMENT
+|   + String: Ever wonder how pro cameras from the 1970's worked? Learn about their single most important tool for the photographer (and lots else!) in this exposé.
+
+Strings of text which take you places!
+Technology Connextras (the second channel that stuff goes on sometimes):
+https://www.youtube.com/channel/UClRwC5Vc8HrB6vGx6Ti-lhA
+Technology Connections on Twitter:
+https://twitter.com/TechConnectify
+The TC Subreddit
+https://www.reddit.com/r/technologyconnections
+
+This channel is supported through viewer contribution on Patreon. Thanks to the generous support of people like you, Technology Connections has remained independent and possible. It's how I can make fun of products like these! If you'd like to join the amazing people who've pledged their support, check out the link below. Thank you for your consideration!
+https://www.patreon.com/technologyconnections
+
+And a big heartfelt thanks to the following Patrons!
+Sobol, cyberstorm, RUMOKO , Keith Chang, Logan Scott, Irwin , Brad Feehan, Mitch Brunner, Eric Rakestraw, Filipe Coelho, Brett Caven, h2g2guy , Ken Snider, Charlie Davidson, Noah W., Matthew Abbitt, Chris Boyle, Steve McClellan, Nitin Dahyabhai, Dennis Morhardt, Jelle De Loecker, Michal Miškerník, Ryan Biesemeyer, Jonathan Kade, NobTinker , Devin Edwards, Randy Messinger, Seth Persigehl, Piro606 , Hans Guthrie, Nathan Friedly, Robert Hausner, Tomáš Vyčítal, Matthew David Chapin, Dominykas D, Bill King, Roadrunner 531, Gareth Brown, Somebody, Maarten De Rocker, John Whitaker, João Pedro Francese, Joseph Russell, Mike Richards, Patrick E Mitchell, ZGryphon , Alton Toth, Eric Walter, Andreas , Lee Sweet, Justin Zakrzeski, Артем Лещев, Jared Julien, Lorraine Hughes, Max Maguire, Gunnsteinn Þórisson, Randall , KeeperofDusk, Lukáš Foral, John Heavisides, Rob Newman, Mark Muir, Andrew Moriarty, Steve Murray, Bendegúz Gellén, Yana M., J.C. Lundberg, Jacob Tuley, Alex Mader, Matthew Barnes, Cameron Orr, Joel Nichols, Steven Rosen, Brian Thomas Garcia-Luense, Joel Eblin, Sarah Marchesi, Joshua Netterfield, Jim Thoenen, David Cichowski, Ioan Loosley, Daniel Shiderly, Hargrimm , jay, Syber-Space, Jesus G Hernandez, Todd Johnson, Turinggirl , Tanner Smith, Anne Nash, Jordi Pakey-Rodriguez, Lukiday , Marcus LaGrone, RegalRegex, Michael Lehenbauer, aetios , James Manes, Mihaly Barasz, Potatoots, David Bednall, volty, Mark Johansson, TheDee , Lee Dedmon, Berwin Xie, Grey Hodge, Jim Kropa, Tony B, David Collins, Alex Carbone, Ben Golus, Luke Goater, Tim Doering, sanlaxsfo, Jonathan Grayum, Kodi , Colin, James Cox, Cody Henthorne, Mark Komarinski, Jeff G, Kevin Reedy, Ryan McLaughlin, J.P. Stewart, NADAV GERBER, Cory Albert, Bryce Swearingen, Anthony Reyes, Ed Taylor, Blair Simpkins, Nathan Fenner, Rittycat , Huub Heijnen, Joseph Dion, Jim Sells, Dustin Gilyard, nils mccarthy, Damione Moore, Jeremy Weeks, Carolyn Gerakines, Patrik Cevela, Mathew Vicknair, Graham O'Mara, Nate Gelber, A3HeadedMunkey, Josh A, Cameron Ross, Thomas E Maciejewski, Etta Spangler, Colby Schaefer, Kyle Boreing, Ben Waxler, Jasper J, Daniel Mattingley, Jason Fortezzo, jzedan , Devan Bailey, Jimmy Fremgen - Politics for People, Igor Hrcek, Andy Warren, Jack Culbert, Rowan Parker, Steven Dubnoff, Alexandra Schoof, Keaton Mowery, Father Cadan, Brett Profitt, Alexander K, Martin Haynes, Alipasha Sadri, Dash Buck, Zac West
+|  + Simple
+|   + Name: ENCODER
+|   + String: Lavf58.45.100
+| + Tag
+|  + Targets
+|   + Track UID: 14335030952918840546
+|  + Simple
+|   + Name: HANDLER_NAME
+|   + String: ISO Media file produced by Google Inc.
+|  + Simple
+|   + Name: DURATION
+|   + String: 00:28:07.199000000
+| + Tag
+|  + Targets
+|   + Track UID: 2187085546731769069
+|  + Simple
+|   + Name: DURATION
+|   + String: 00:28:07.221000000
+| + Tag
+|  + Targets
+|   + Track UID: 3963375468228444293
+|  + Simple
+|   + Name: DURATION
+|   + String: 00:28:12.563000000
+|+ Cluster

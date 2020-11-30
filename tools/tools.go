@@ -37,7 +37,7 @@ func main() {
 	}
 
 	if videoList.NextPageToken != "" {
-		panic(fmt.Sprint("Next Page!!!! %s of %s per page", videoList.PageInfo.TotalResults, videoList.PageInfo.ResultsPerPage))
+		panic(fmt.Sprintf("Next Page!!!! %d of %d per page", videoList.PageInfo.TotalResults, videoList.PageInfo.ResultsPerPage))
 	}
 
 	for _, video := range videoList.Items {

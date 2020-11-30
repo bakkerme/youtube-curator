@@ -98,6 +98,12 @@ var Feeds = map[string]YTChannel{
 		"https://www.youtube.com/user/mjd7999",
 		ArchivalModeArchive,
 	},
+	"NickRobinson": YTChannel{
+		"NickRobinson",
+		"https://www.youtube.com/feeds/videos.xml?playlist_id=PLGFiGO64XRngcnRd9KrQBUPpYWIWpPkVN",
+		"https://www.youtube.com/playlist?list=PLGFiGO64XRngcnRd9KrQBUPpYWIWpPkVN",
+		ArchivalModeArchive,
+	},
 	"RedLetterMedia": YTChannel{
 		"RedLetterMedia",
 		"https://www.youtube.com/feeds/videos.xml?channel_id=UCrTNhL_yO3tPTdQ5XgmmWjA",

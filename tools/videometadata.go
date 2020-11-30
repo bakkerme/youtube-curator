@@ -8,5 +8,11 @@ type VideoMetadataProvider interface {
 	Creator() string
 	PublishedAt() string
 	Duration() int
-	Description() string
+}
+
+// VideoMetadataError represents a parse error. This is not necessarily fatal
+// and may be expected, depending on the data in the Video's metadata
+type VideoMetadataError interface {
+	Error() string
+	UnparsedFields() []string
 }
