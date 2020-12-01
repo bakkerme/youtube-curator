@@ -124,10 +124,8 @@ func handleParseErrorResponse(pErrs *[]fieldParseError, videoPath string) *mkvMe
 
 func appendParseError(parseErrors *[]fieldParseError, pErr *fieldParseError) *[]fieldParseError {
 	if pErr != nil {
-		fmt.Println(parseErrors)
 		appendedParseErrors := append(*parseErrors, *pErr)
 		parseErrors = &appendedParseErrors
-		fmt.Println(parseErrors)
 	}
 
 	return parseErrors
