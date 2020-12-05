@@ -21,3 +21,11 @@ replace hyperfocus.systems/youtube-curator-server/utils => ../utils
 require hyperfocus.systems/youtube-curator-server/collection v1.0.0
 
 replace hyperfocus.systems/youtube-curator-server/collection => ../collection
+
+require hyperfocus.systems/youtube-curator-server/videometadata v1.0.0
+
+replace hyperfocus.systems/youtube-curator-server/videometadata => ../videometadata
+
+require hyperfocus.systems/youtube-curator-server/videometadata/mkvinfo v1.0.0
+
+replace hyperfocus.systems/youtube-curator-server/videometadata/mkvinfo => ../videometadata/mkvinfo

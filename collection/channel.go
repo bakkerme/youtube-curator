@@ -186,7 +186,7 @@ func GetLocalVideosByYTChannel(channel *YTChannel) (*[]Video, error) {
 func getLocalVideosFromDirList(dirlist *[]os.FileInfo, path string) (*[]Video, error) {
 	var videos []Video
 	for _, file := range *dirlist {
-		isValidVideo, _ := isMP4(file.Name())
+		isValidVideo, _ := isValidVideo(file.Name())
 
 		if isValidVideo {
 			videoPath := path + "/" + file.Name()
@@ -205,6 +205,20 @@ func getLocalVideosFromDirList(dirlist *[]os.FileInfo, path string) (*[]Video, e
 	}
 
 	return &videos, nil
+}
+
+func isValidVideo(filename string) (bool, error) {
+	is, err := isMP4(filename)
+	if is {
+		return is, err
+	}
+
+	is, err = isMKV(filename)
+	if is {
+		return is, err
+	}
+
+	return false, nil
 }
 
 func isMP4(filename string) (bool, error) {

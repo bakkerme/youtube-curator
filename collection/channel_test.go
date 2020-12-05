@@ -1,7 +1,9 @@
 package collection
 
 import (
+	"hyperfocus.systems/youtube-curator-server/youtubeapi"
 	"os"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -66,14 +68,14 @@ func TestGetVideoIDFromFileName(t *testing.T) {
 
 func TestGetEntriesNotInVideoList(t *testing.T) {
 	t.Run("With a Match", func(t *testing.T) {
-		thumbnail := Thumbnail{"", 0, 0}
-		mediaGroup := MediaGroup{"", thumbnail, ""}
+		thumbnail := youtubeapi.RSSThumbnail{"", 0, 0}
+		mediaGroup := youtubeapi.RSSMediaGroup{"", thumbnail, ""}
 
-		outstandingEntry := VideoEntry{"wxyzabcdefg", "Video 4", Link{"http://link4"}, "", "", mediaGroup}
-		entries := []VideoEntry{
-			VideoEntry{"12345678911", "Video 1", Link{"http://link"}, "", "", mediaGroup},
-			VideoEntry{"abcdefghijk", "Video 2", Link{"http://link2"}, "", "", mediaGroup},
-			VideoEntry{"lmnopqrxtuv", "Video 3", Link{"http://link3"}, "", "", mediaGroup},
+		outstandingEntry := youtubeapi.RSSVideoEntry{"wxyzabcdefg", "Video 4", youtubeapi.RSSLink{"http://link4"}, "", "", mediaGroup}
+		entries := []youtubeapi.RSSVideoEntry{
+			youtubeapi.RSSVideoEntry{"12345678911", "Video 1", youtubeapi.RSSLink{"http://link"}, "", "", mediaGroup},
+			youtubeapi.RSSVideoEntry{"abcdefghijk", "Video 2", youtubeapi.RSSLink{"http://link2"}, "", "", mediaGroup},
+			youtubeapi.RSSVideoEntry{"lmnopqrxtuv", "Video 3", youtubeapi.RSSLink{"http://link3"}, "", "", mediaGroup},
 			outstandingEntry,
 		}
 
@@ -91,13 +93,13 @@ func TestGetEntriesNotInVideoList(t *testing.T) {
 	})
 
 	t.Run("With no match", func(t *testing.T) {
-		thumbnail := Thumbnail{"", 0, 0}
-		mediaGroup := MediaGroup{"", thumbnail, ""}
+		thumbnail := youtubeapi.RSSThumbnail{"", 0, 0}
+		mediaGroup := youtubeapi.RSSMediaGroup{"", thumbnail, ""}
 
-		entries := []VideoEntry{
-			VideoEntry{"12345678911", "Video 1", Link{"http://link"}, "", "", mediaGroup},
-			VideoEntry{"abcdefghijk", "Video 2", Link{"http://link2"}, "", "", mediaGroup},
-			VideoEntry{"lmnopqrxtuv", "Video 3", Link{"http://link3"}, "", "", mediaGroup},
+		entries := []youtubeapi.RSSVideoEntry{
+			youtubeapi.RSSVideoEntry{"12345678911", "Video 1", youtubeapi.RSSLink{"http://link"}, "", "", mediaGroup},
+			youtubeapi.RSSVideoEntry{"abcdefghijk", "Video 2", youtubeapi.RSSLink{"http://link2"}, "", "", mediaGroup},
+			youtubeapi.RSSVideoEntry{"lmnopqrxtuv", "Video 3", youtubeapi.RSSLink{"http://link3"}, "", "", mediaGroup},
 		}
 
 		videos := []Video{
@@ -114,13 +116,13 @@ func TestGetEntriesNotInVideoList(t *testing.T) {
 	})
 
 	t.Run("With no video list provided", func(t *testing.T) {
-		thumbnail := Thumbnail{"", 0, 0}
-		mediaGroup := MediaGroup{"", thumbnail, ""}
+		thumbnail := youtubeapi.RSSThumbnail{"", 0, 0}
+		mediaGroup := youtubeapi.RSSMediaGroup{"", thumbnail, ""}
 
-		entries := []VideoEntry{
-			VideoEntry{"12345678911", "Video 1", Link{"http://link"}, "", "", mediaGroup},
-			VideoEntry{"abcdefghijk", "Video 2", Link{"http://link2"}, "", "", mediaGroup},
-			VideoEntry{"lmnopqrxtuv", "Video 3", Link{"http://link3"}, "", "", mediaGroup},
+		entries := []youtubeapi.RSSVideoEntry{
+			youtubeapi.RSSVideoEntry{"12345678911", "Video 1", youtubeapi.RSSLink{"http://link"}, "", "", mediaGroup},
+			youtubeapi.RSSVideoEntry{"abcdefghijk", "Video 2", youtubeapi.RSSLink{"http://link2"}, "", "", mediaGroup},
+			youtubeapi.RSSVideoEntry{"lmnopqrxtuv", "Video 3", youtubeapi.RSSLink{"http://link3"}, "", "", mediaGroup},
 		}
 
 		videos := []Video{}
@@ -133,7 +135,7 @@ func TestGetEntriesNotInVideoList(t *testing.T) {
 	})
 
 	t.Run("With no entries provied", func(t *testing.T) {
-		entries := []VideoEntry{}
+		entries := []youtubeapi.RSSVideoEntry{}
 
 		videos := []Video{
 			Video{"Video 1-12345678911.mp4", "12345678911"},
@@ -152,9 +154,9 @@ func TestGetEntriesNotInVideoList(t *testing.T) {
 
 func TestIsEntryInVideoList(t *testing.T) {
 	t.Run("With match", func(t *testing.T) {
-		thumbnail := Thumbnail{"", 0, 0}
-		mediaGroup := MediaGroup{"", thumbnail, ""}
-		entry := VideoEntry{"12345678911", "Video 1", Link{"http://link"}, "", "", mediaGroup}
+		thumbnail := youtubeapi.RSSThumbnail{"", 0, 0}
+		mediaGroup := youtubeapi.RSSMediaGroup{"", thumbnail, ""}
+		entry := youtubeapi.RSSVideoEntry{"12345678911", "Video 1", youtubeapi.RSSLink{"http://link"}, "", "", mediaGroup}
 
 		videos := []Video{
 			Video{"Video 1-12345678911.mp4", "12345678911"},
@@ -163,14 +165,14 @@ func TestIsEntryInVideoList(t *testing.T) {
 		}
 
 		if !isEntryInVideoList(&entry, &videos) {
-			t.Error("VideoEntry should have been found in video list")
+			t.Error("youtubeapi.RSSVideoEntry should have been found in video list")
 		}
 	})
 
 	t.Run("With no match", func(t *testing.T) {
-		thumbnail := Thumbnail{"", 0, 0}
-		mediaGroup := MediaGroup{"", thumbnail, ""}
-		entry := VideoEntry{"BADID123456", "Video 1", Link{"http://link"}, "", "", mediaGroup}
+		thumbnail := youtubeapi.RSSThumbnail{"", 0, 0}
+		mediaGroup := youtubeapi.RSSMediaGroup{"", thumbnail, ""}
+		entry := youtubeapi.RSSVideoEntry{"BADID123456", "Video 1", youtubeapi.RSSLink{"http://link"}, "", "", mediaGroup}
 
 		videos := []Video{
 			Video{"Video 1-12345678911.mp4", "12345678911"},
@@ -179,19 +181,19 @@ func TestIsEntryInVideoList(t *testing.T) {
 		}
 
 		if isEntryInVideoList(&entry, &videos) {
-			t.Error("VideoEntry should not have been found in video list")
+			t.Error("youtubeapi.RSSVideoEntry should not have been found in video list")
 		}
 	})
 
 	t.Run("With empty video list", func(t *testing.T) {
-		thumbnail := Thumbnail{"", 0, 0}
-		mediaGroup := MediaGroup{"", thumbnail, ""}
-		entry := VideoEntry{"BADID123456", "Video 1", Link{"http://link"}, "", "", mediaGroup}
+		thumbnail := youtubeapi.RSSThumbnail{"", 0, 0}
+		mediaGroup := youtubeapi.RSSMediaGroup{"", thumbnail, ""}
+		entry := youtubeapi.RSSVideoEntry{"BADID123456", "Video 1", youtubeapi.RSSLink{"http://link"}, "", "", mediaGroup}
 
 		videos := []Video{}
 
 		if isEntryInVideoList(&entry, &videos) {
-			t.Error("VideoEntry should not have been found in video list")
+			t.Error("youtubeapi.RSSVideoEntry should not have been found in video list")
 		}
 	})
 }
@@ -249,22 +251,31 @@ func TestGetLocalVideosFromDirList(t *testing.T) {
 				32000000,
 				false,
 			},
+			MockFileInfo{
+				"My Video-basAIdKsyIA.mkv",
+				33000000,
+				false,
+			},
 		}
 
 		path := "/test/path"
 
-		videoList := []Video{
+		expectedVideos := []Video{
 			Video{
 				path + "/" + dirlist[0].Name(),
 				"dCqJ6iPHus0",
 			},
 			Video{
-				path + "/" + dirlist[1].Name(),
+				path + "/" + dirlist[2].Name(),
 				"-AC4HwzAK7A",
 			},
 			Video{
-				path + "/" + dirlist[2].Name(),
+				path + "/" + dirlist[4].Name(),
 				"_gPsIiKtybA",
+			},
+			Video{
+				path + "/" + dirlist[5].Name(),
+				"basAIdKsyIA",
 			},
 		}
 
@@ -273,10 +284,8 @@ func TestGetLocalVideosFromDirList(t *testing.T) {
 			t.Errorf("getLocalVideosFromDirList returned an error %s", err)
 		}
 
-		if (*videos)[0] != videoList[0] &&
-			(*videos)[1] != videoList[1] &&
-			(*videos)[2] != videoList[2] {
-			t.Errorf("Video list does not match response from function: %s", videos)
+		if !reflect.DeepEqual(expectedVideos, *videos) {
+			t.Errorf("Video list does not match response from function: Expected\n%+v\n, got\n%+v", expectedVideos, *videos)
 		}
 	})
 
@@ -386,6 +395,54 @@ func TestIsFileMP4(t *testing.T) {
 		_, err := isMP4(file)
 		if err == nil {
 			t.Error("isMP4 did not return an error")
+		}
+	})
+}
+
+func TestIsFileMKV(t *testing.T) {
+	t.Run("A file string with an mpkv extension returns true", func(t *testing.T) {
+		file := "test.mkv"
+		isValid, err := isMKV(file)
+		if err != nil {
+			t.Errorf("isMKV returned an error %s", err)
+		}
+		if !isValid {
+			t.Errorf("isMKV returned false for %s", file)
+		}
+	})
+
+	t.Run("A file string with a doc extension returns false", func(t *testing.T) {
+		file := "test.doc"
+		isValid, err := isMKV(file)
+		if err != nil {
+			t.Errorf("isMKV returned an error %s", err)
+		}
+		if isValid {
+			t.Errorf("isMKV returned true for %s", file)
+		}
+	})
+
+	t.Run("A filename with a dot at the end but no filetype extension returns an error", func(t *testing.T) {
+		file := "test."
+		_, err := isMKV(file)
+		if err == nil {
+			t.Error("isMKV did not return an error")
+		}
+	})
+
+	t.Run("A filename with no extension returns an error", func(t *testing.T) {
+		file := "test"
+		_, err := isMKV(file)
+		if err == nil {
+			t.Error("isMKV did not return an error")
+		}
+	})
+
+	t.Run("No filename returns an error", func(t *testing.T) {
+		file := ""
+		_, err := isMKV(file)
+		if err == nil {
+			t.Error("isMKV did not return an error")
 		}
 	})
 }
