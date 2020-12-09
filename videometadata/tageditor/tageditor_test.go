@@ -87,17 +87,22 @@ func TestStringParsers(t *testing.T) {
 	})
 
 	t.Run("parsePublishedAt should parse out a publishedAt", func(t *testing.T) {
-		expectedPublishedAt := "A PublishedAt"
+		expectedPublishedAtString := "2017-06-15"
+		expectedPublishedAt, err := time.Parse("2006-01-02", expectedPublishedAtString)
+		if err != nil {
+			t.Errorf("time.Parse returned an error %s", err)
+		}
+
 		publishedAtTemplate := `Record date           %s`
 
-		value := fmt.Sprintf(publishedAtTemplate, expectedPublishedAt)
+		value := fmt.Sprintf(publishedAtTemplate, expectedPublishedAtString)
 		publishedAt, err := commandProvider.ParsePublishedAt(value)
 
 		if err != nil {
-			t.Error("parsePublishedAt should not return an error")
+			t.Errorf("parsePublishedAt should not return an error %s", err)
 		}
 
-		if publishedAt != expectedPublishedAt {
+		if *publishedAt != expectedPublishedAt {
 			t.Errorf("parsePublishedAt did not return expected value. Expected %s, got %s", expectedPublishedAt, publishedAt)
 		}
 	})
@@ -122,7 +127,7 @@ func TestStringParsers(t *testing.T) {
 			t.Error("parseDuration should not return an error")
 		}
 
-		if duration != expectedDuration {
+		if *duration != expectedDuration {
 			t.Errorf("parseDuration did not return expected value. Expected %d, got %d", expectedDuration, duration)
 		}
 	})
@@ -197,5 +202,14 @@ func TestWrite(t *testing.T) {
 		if err == nil {
 			t.Error("buildTagEditorSetString did not return an error")
 		}
+	})
+}
+
+func TestInterface(t *testing.T) {
+	t.Run("MP4MetadataCommandProvider should be a CommandProvider", func(t *testing.T) {
+		var cmdProv videometadata.CommandProvider
+		cmdProv = MP4MetadataCommandProvider{}
+
+		t.Logf("lets use cmdProv so the compiler doesn't get mad %s", cmdProv)
 	})
 }

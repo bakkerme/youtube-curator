@@ -39,15 +39,25 @@ func (m MKVMetadataCommandProvider) ParseCreator(output string) (string, error) 
 }
 
 // ParsePublishedAt parses the publishedAt from the MKVInfo output
-func (m MKVMetadataCommandProvider) ParsePublishedAt(output string) (string, error) {
-	return parseOutputStringForRegex(`(?msU)DATE.*String: (?P<content>.*$)`, output)
+func (m MKVMetadataCommandProvider) ParsePublishedAt(output string) (*time.Time, error) {
+	str, err := parseOutputStringForRegex(`(?msU)DATE.*String: (?P<content>.*$)`, output)
+	if err != nil {
+		return nil, err
+	}
+
+	tm, err := time.Parse("20060102", str)
+	if err != nil {
+		return nil, err
+	}
+
+	return &tm, nil
 }
 
 // ParseDuration parses the duration from the MKVInfo output
-func (m MKVMetadataCommandProvider) ParseDuration(output string) (time.Duration, error) {
+func (m MKVMetadataCommandProvider) ParseDuration(output string) (*time.Duration, error) {
 	str, err := parseOutputStringForRegex(`(?msU)Duration: (?P<content>.*$)`, output)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	milisecondless := strings.Split(str, ".")[0]
@@ -56,10 +66,10 @@ func (m MKVMetadataCommandProvider) ParseDuration(output string) (time.Duration,
 	duration, err := time.ParseDuration(durationString)
 
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	return duration, nil
+	return &duration, nil
 }
 
 // SetMetadata sets metadata on an mkv item

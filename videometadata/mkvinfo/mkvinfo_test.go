@@ -2,6 +2,7 @@ package mkvinfo
 
 import (
 	"fmt"
+	"hyperfocus.systems/youtube-curator-server/videometadata"
 	"testing"
 	"time"
 )
@@ -89,19 +90,25 @@ func TestStringParsers(t *testing.T) {
 	})
 
 	t.Run("parsePublishedAt should parse out a publishedAt", func(t *testing.T) {
-		expectedPublishedAt := "A PublishedAt"
-		publishedAt := `| + Name: DATE
+		expectedPublishedAtString := "20201117"
+		rawInputString := `| + Name: DATE
 |  + String: %s
 |`
 
-		value := fmt.Sprintf(publishedAt, expectedPublishedAt)
+		value := fmt.Sprintf(rawInputString, expectedPublishedAtString)
+
+		expectedPublishedAt, err := time.Parse("20060102", expectedPublishedAtString)
+		if err != nil {
+			t.Error(err)
+		}
+
 		publishedAt, err := commandProvider.ParsePublishedAt(value)
 
 		if err != nil {
-			t.Error("parsePublishedAt should not return an error")
+			t.Errorf("parsePublishedAt should not return an error %s", err)
 		}
 
-		if publishedAt != expectedPublishedAt {
+		if *publishedAt != expectedPublishedAt {
 			t.Errorf("parsePublishedAt did not return expected value. Expected %s, got %s", expectedPublishedAt, publishedAt)
 		}
 	})
@@ -126,7 +133,7 @@ func TestStringParsers(t *testing.T) {
 			t.Error("parseDuration should not return an error")
 		}
 
-		if duration != expectedDuration {
+		if *duration != expectedDuration {
 			t.Errorf("parseDuration did not return expected value. Expected %s, got %s", expectedDuration, duration)
 		}
 	})
@@ -159,5 +166,14 @@ func TestStringParsers(t *testing.T) {
 		if err == nil {
 			t.Error("parseOutputStringForRegex should return an error")
 		}
+	})
+}
+
+func TestInterface(t *testing.T) {
+	t.Run("MKVMetadataCommandProvider should be a CommandProvider", func(t *testing.T) {
+		var cmdProv videometadata.CommandProvider
+		cmdProv = MKVMetadataCommandProvider{}
+
+		t.Logf("lets use cmdProv so the compiler doesn't get mad %s", cmdProv)
 	})
 }

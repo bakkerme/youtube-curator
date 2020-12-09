@@ -29,3 +29,7 @@ replace hyperfocus.systems/youtube-curator-server/videometadata => ../videometad
 require hyperfocus.systems/youtube-curator-server/videometadata/mkvinfo v1.0.0
 
 replace hyperfocus.systems/youtube-curator-server/videometadata/mkvinfo => ../videometadata/mkvinfo
+
+require hyperfocus.systems/youtube-curator-server/videometadata/tageditor v1.0.0
+
+replace hyperfocus.systems/youtube-curator-server/videometadata/tageditor => ../videometadata/tageditor

@@ -44,33 +44,43 @@ func (m MP4MetadataCommandProvider) ParseCreator(output string) (string, error) 
 }
 
 // ParsePublishedAt parses the publishedAt from the MP4Info output
-func (m MP4MetadataCommandProvider) ParsePublishedAt(output string) (string, error) {
-	return parseOutputStringForRegex(`(?msU)Record date\s+(?P<content>\S.*$)`, output)
+func (m MP4MetadataCommandProvider) ParsePublishedAt(output string) (*time.Time, error) {
+	str, err := parseOutputStringForRegex(`(?msU)Record date\s+(?P<content>\S.*$)`, output)
+	if err != nil {
+		return nil, err
+	}
+
+	tm, err := time.Parse("2006-01-02", str)
+	if err != nil {
+		return nil, err
+	}
+
+	return &tm, nil
 }
 
 // ParseDuration parses the duration from the MP4Info output
-func (m MP4MetadataCommandProvider) ParseDuration(output string) (time.Duration, error) {
+func (m MP4MetadataCommandProvider) ParseDuration(output string) (*time.Duration, error) {
 	hourRegex := `(?m)(?P<hour>\d*)\shr`
 	minuteRegex := `(?m)(?P<hour>\d*)\smin`
 	secondsRegex := `(?m)(?P<seconds>\d*)\ss`
 
 	hours, err := parseOutputStringForRegex(hourRegex, output)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	minutes, err := parseOutputStringForRegex(minuteRegex, output)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	seconds, err := parseOutputStringForRegex(secondsRegex, output)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	durationString := fmt.Sprintf("%sh%sm%ss", hours, minutes, seconds)
 	duration, err := time.ParseDuration(durationString)
 
-	return duration, nil
+	return &duration, nil
 }
 
 // SetMetadata sets metadata on an mp4 item

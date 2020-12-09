@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 	"hyperfocus.systems/youtube-curator-server/collection"
-	// "hyperfocus.systems/youtube-curator-server/videometadata"
-	"hyperfocus.systems/youtube-curator-server/videometadata/mkvinfo"
+	"hyperfocus.systems/youtube-curator-server/videometadata"
+	"hyperfocus.systems/youtube-curator-server/videometadata/tageditor"
 )
 
 func main() {
-	ytc := collection.Feeds["NickRobinson"]
+	ytc := collection.Feeds["Ashens"]
 	videos, err := collection.GetLocalVideosByYTChannel(&ytc)
 	if err != nil {
 		panic(err)
@@ -17,8 +17,8 @@ func main() {
 	path := (*videos)[0].Path
 	fmt.Println(path)
 
-	metadataProvider := &mkvinfo.MKVMetadataProvider{}
-	_, err = metadataProvider.LoadVideoFile(path)
+	metadataProvider := &tageditor.MP4MetadataCommandProvider{}
+	_, err = videometadata.GetVideoMetadata(path, metadataProvider)
 
 	if err != nil {
 		panic(err)
