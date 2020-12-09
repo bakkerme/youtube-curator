@@ -10,8 +10,9 @@ type Provider interface {
 	Title() string
 	Description() string
 	Creator() string
-	PublishedAt() string
-	Duration() int
+	PublishedAt() *time.Time
+	Duration() *time.Duration
+	SetMetadata(Metadata, string) error
 }
 
 // CommandProvider is an interface for different providers of metadata. This
@@ -22,8 +23,8 @@ type CommandProvider interface {
 	ParseTitle(string) (string, error)
 	ParseDescription(string) (string, error)
 	ParseCreator(string) (string, error)
-	ParsePublishedAt(string) (string, error)
-	ParseDuration(string) (time.Duration, error)
+	ParsePublishedAt(string) (*time.Time, error)
+	ParseDuration(string) (*time.Duration, error)
 }
 
 // Error represents a parse error. This is not necessarily fatal
@@ -41,11 +42,11 @@ type Response struct {
 
 // Metadata represents the metadata for the loaded video
 type Metadata struct {
-	title       string
-	description string
-	creator     string
-	publishedAt string
-	duration    time.Duration
+	Title       string
+	Description string
+	Creator     string
+	PublishedAt *time.Time
+	Duration    *time.Duration
 }
 
 // ParseError represents an error string and a list of fields that could not be parsed from the video

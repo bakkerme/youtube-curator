@@ -1,7 +1,9 @@
 package mkvinfo
 
 import (
+	"errors"
 	"fmt"
+	"hyperfocus.systems/youtube-curator-server/videometadata"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -58,6 +60,11 @@ func (m MKVMetadataCommandProvider) ParseDuration(output string) (time.Duration,
 	}
 
 	return duration, nil
+}
+
+// SetMetadata sets metadata on an mkv item
+func (m MKVMetadataCommandProvider) SetMetadata(metadata videometadata.Metadata, path string) error {
+	return errors.New("MKVInfo does not implement SetMetadata right now")
 }
 
 func parseOutputStringForRegex(regex string, output string) (string, error) {

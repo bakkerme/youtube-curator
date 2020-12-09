@@ -1,7 +1,9 @@
 package tageditor
 
 import (
+	"errors"
 	"fmt"
+	"hyperfocus.systems/youtube-curator-server/videometadata"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -15,12 +17,12 @@ type MP4MetadataCommandProvider struct{}
 func (m MP4MetadataCommandProvider) Run(path string) (string, error) {
 	out, err := exec.Command("./tageditor-3.3.10.AppImage", "get", "-f", path).Output()
 	if err != nil {
-		return "", fmt.Errorf("Could not load metadata for %s.\nResponse from mkvinfo was: %s\nError %s", path, out, err)
+		return "", fmt.Errorf("Could not load metadata for %s.\nResponse from tageditor was: %s\nError %s", path, out, err)
 	}
 
 	infoOut, err := exec.Command("./tageditor-3.3.10.AppImage", "info", "-f", path).Output()
 	if err != nil {
-		return "", fmt.Errorf("Could not load metadata for %s.\nResponse from mkvinfo was: %s\nError %s", path, out, err)
+		return "", fmt.Errorf("Could not load metadata for %s.\nResponse from tageditor was: %s\nError %s", path, out, err)
 	}
 
 	return string(out) + string(infoOut), nil
@@ -69,6 +71,46 @@ func (m MP4MetadataCommandProvider) ParseDuration(output string) (time.Duration,
 	duration, err := time.ParseDuration(durationString)
 
 	return duration, nil
+}
+
+// SetMetadata sets metadata on an mp4 item
+func (m MP4MetadataCommandProvider) SetMetadata(metadata *videometadata.Metadata, path string) error {
+	values, err := buildTagEditorSetString(metadata)
+	if err != nil {
+		return err
+	}
+	return writeTagMetadata(values, path)
+}
+
+func buildTagEditorSetString(metadata *videometadata.Metadata) (string, error) {
+	var valueString []string
+	if metadata.Title != "" {
+		valueString = append(valueString, "title="+metadata.Title)
+	}
+	if metadata.Description != "" {
+		valueString = append(valueString, "comment="+metadata.Description)
+	}
+	if metadata.Creator != "" {
+		valueString = append(valueString, "artist="+metadata.Creator)
+	}
+	if metadata.PublishedAt != nil {
+		publishString := metadata.PublishedAt.Format("2006-01-02")
+		valueString = append(valueString, "recorddate="+publishString)
+	}
+
+	if len(valueString) == 0 {
+		return "", errors.New("Provided metadata did not contain any data to write")
+	}
+	return strings.Join(valueString, " "), nil
+}
+
+func writeTagMetadata(value string, path string) error {
+	out, err := exec.Command("./tageditor-3.3.10.AppImage", "set", "--values", value, "-f", path).Output()
+	if err != nil {
+		return fmt.Errorf("Could not write metadata for %s.\nResponse from tageditor was: %s\nError %s", path, out, err)
+	}
+
+	return nil
 }
 
 func parseOutputStringForRegex(regex string, output string) (string, error) {

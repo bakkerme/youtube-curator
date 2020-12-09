@@ -2,6 +2,7 @@ package tageditor
 
 import (
 	"fmt"
+	"hyperfocus.systems/youtube-curator-server/videometadata"
 	"testing"
 	"time"
 )
@@ -153,6 +154,48 @@ func TestStringParsers(t *testing.T) {
 
 		if err == nil {
 			t.Error("parseOutputStringForRegex should return an error")
+		}
+	})
+}
+
+func TestWrite(t *testing.T) {
+	t.Run("buildTagEditorSetString returns a valid string for a metadata input", func(t *testing.T) {
+		publishedAt, err := time.Parse("2006-01-02", "1992-05-01")
+		fmt.Print(publishedAt.Format("2006-01-02") + "\n")
+		if err != nil {
+			t.Error("Failed to parse time string")
+		}
+
+		mt := &videometadata.Metadata{
+			Title:       "a title",
+			Description: "a description",
+			Creator:     "a creator",
+			PublishedAt: &publishedAt,
+		}
+
+		str, err := buildTagEditorSetString(mt)
+		if err != nil {
+			t.Errorf("buildTagEditorSetString returned an error when none was expected. Got %s", err)
+		}
+
+		expected := fmt.Sprintf("title=%s comment=%s artist=%s recorddate=%s", mt.Title, mt.Description, mt.Creator, "1992-05-01")
+
+		if str != expected {
+			t.Errorf("buildTagEditorSetString did not return correct result. Expected\n%s\ngot\n%s", expected, str)
+		}
+	})
+
+	t.Run("buildTagEditorSetString should return an error if no valid tags are to be written", func(t *testing.T) {
+		mt := &videometadata.Metadata{
+			Title:       "",
+			Description: "",
+			Creator:     "",
+			PublishedAt: nil,
+		}
+
+		_, err := buildTagEditorSetString(mt)
+		if err == nil {
+			t.Error("buildTagEditorSetString did not return an error")
 		}
 	})
 }

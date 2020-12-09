@@ -29,36 +29,36 @@ func parseVideoMetadataOutput(output string, pr CommandProvider) (*Metadata, *[]
 	var parseErrors []fieldParseError
 
 	title, err := pr.ParseTitle(output)
-	parseErrors = *appendParseError(&parseErrors, buildParseError("title", err))
+	parseErrors = *appendParseError(&parseErrors, buildParseError("Title", err))
 
 	description, err := pr.ParseDescription(output)
-	parseErrors = *appendParseError(&parseErrors, buildParseError("description", err))
+	parseErrors = *appendParseError(&parseErrors, buildParseError("Description", err))
 
 	creator, err := pr.ParseCreator(output)
-	parseErrors = *appendParseError(&parseErrors, buildParseError("creator", err))
+	parseErrors = *appendParseError(&parseErrors, buildParseError("Creator", err))
 
 	publishedAt, err := pr.ParsePublishedAt(output)
-	parseErrors = *appendParseError(&parseErrors, buildParseError("publishedAt", err))
+	parseErrors = *appendParseError(&parseErrors, buildParseError("PublishedAt", err))
 
 	duration, err := pr.ParseDuration(output)
-	parseErrors = *appendParseError(&parseErrors, buildParseError("duration", err))
+	parseErrors = *appendParseError(&parseErrors, buildParseError("Duration", err))
 
 	if parseErrors != nil && len(parseErrors) > 0 {
 		return &Metadata{
-			title:       title,
-			description: description,
-			creator:     creator,
-			publishedAt: publishedAt,
-			duration:    duration,
+			Title:       title,
+			Description: description,
+			Creator:     creator,
+			PublishedAt: publishedAt,
+			Duration:    duration,
 		}, &parseErrors
 	}
 
 	return &Metadata{
-		title:       title,
-		description: description,
-		creator:     creator,
-		publishedAt: publishedAt,
-		duration:    duration,
+		Title:       title,
+		Description: description,
+		Creator:     creator,
+		PublishedAt: publishedAt,
+		Duration:    duration,
 	}, nil
 
 }
