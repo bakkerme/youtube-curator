@@ -9,18 +9,18 @@ import (
 var rssExpect = RSS{
 	"yt:channel:UCS-WzPVpAAli-1IfEG2lN8A",
 	"Test Guy",
-	[]VideoEntry{
-		VideoEntry{
+	[]RSSVideoEntry{
+		RSSVideoEntry{
 			"KQA9Na4aOa1",
 			"Test Video New",
-			Link{
+			RSSLink{
 				"https://www.youtube.com/watch?v=KQA9Na4aOa1",
 			},
 			"2020-11-06T19:00:01+00:00",
 			"2020-11-06T23:12:15+00:00",
-			MediaGroup{
+			RSSMediaGroup{
 				"Test Video 1",
-				Thumbnail{
+				RSSThumbnail{
 					"https://i2.ytimg.com/vi/KQA9Na4aOa1/hqdefault.jpg",
 					480,
 					360,
@@ -28,17 +28,17 @@ var rssExpect = RSS{
 				"Test Description New",
 			},
 		},
-		VideoEntry{
+		RSSVideoEntry{
 			"OGK8gnP4TfA",
 			"Test Video 1",
-			Link{
+			RSSLink{
 				"https://www.youtube.com/watch?v=OGK8gnP4TfA",
 			},
 			"2020-11-06T19:00:01+00:00",
 			"2020-11-06T23:12:15+00:00",
-			MediaGroup{
+			RSSMediaGroup{
 				"Test Video 1",
-				Thumbnail{
+				RSSThumbnail{
 					"https://i2.ytimg.com/vi/OGK8gnP4TfA/hqdefault.jpg",
 					480,
 					360,
@@ -46,17 +46,17 @@ var rssExpect = RSS{
 				"Test Description",
 			},
 		},
-		VideoEntry{
+		RSSVideoEntry{
 			"FazJqPQ6xSs",
 			"Test Video 2",
-			Link{
+			RSSLink{
 				"https://www.youtube.com/watch?v=FazJqPQ6xSs",
 			},
 			"2020-11-06T19:00:01+00:00",
 			"2020-11-06T23:12:15+00:00",
-			MediaGroup{
+			RSSMediaGroup{
 				"Test Video 2",
-				Thumbnail{
+				RSSThumbnail{
 					"https://i2.ytimg.com/vi/FazJqPQ6xSs/hqdefault.jpg",
 					480,
 					360,

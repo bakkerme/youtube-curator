@@ -2,6 +2,7 @@ package youtubeapi
 
 import (
 	"errors"
+	"fmt"
 	"hyperfocus.systems/youtube-curator-server/config"
 	"net/http"
 	"reflect"
@@ -28,7 +29,7 @@ func TestGetVideoInfoURL(t *testing.T) {
 		id := "123abc"
 		accessKey := "cba321"
 
-		url := getVideoInfoURL(id, accessKey)
+		url := getVideoInfoURL(&[]string{id}, accessKey)
 
 		hasHTTPS := strings.Contains(url, "https://")
 
@@ -85,7 +86,7 @@ func TestGetVideoInfo(t *testing.T) {
 			YoutubeAPIKey: apiTestString,
 		}
 
-		videoListResponse, err := getVideoInfo("18-elPdai_1", &config, &mockHTTPClient{statusCodeToReturn: 200})
+		videoListResponse, err := getVideoInfo(&[]string{"18-elPdai_1"}, &config, &mockHTTPClient{statusCodeToReturn: 200})
 		if err != nil {
 			t.Errorf("Got error when running getVideoInfo %s", err)
 		}
@@ -102,7 +103,7 @@ func TestGetVideoInfo(t *testing.T) {
 			YoutubeAPIKey: apiTestString,
 		}
 
-		_, err := getVideoInfo("18-elPdai_1", &config, &mockHTTPClient{throwError: true})
+		_, err := getVideoInfo(&[]string{"18-elPdai_1"}, &config, &mockHTTPClient{throwError: true})
 		if err == nil {
 			t.Errorf("Did not recieve error when HTTP Request threw error")
 		}
@@ -119,9 +120,28 @@ func TestGetVideoInfo(t *testing.T) {
 			YoutubeAPIKey: apiTestString,
 		}
 
-		_, err := getVideoInfo("18-elPdai_1", &config, &mockHTTPClient{malformJSONResponse: true})
+		_, err := getVideoInfo(&[]string{"18-elPdai_1"}, &config, &mockHTTPClient{malformJSONResponse: true})
 		if err == nil {
 			t.Errorf("Did not recieve error when HTTP Request returned malformed JSON")
 		}
+	})
+
+	t.Run("getVideoInfo throws error if given more than 50 IDs", func(t *testing.T) {
+		apiTestString := "123abc"
+
+		config := config.Config{
+			YoutubeAPIKey: apiTestString,
+		}
+
+		var ids []string
+		for i := 0; i < 50; i++ {
+			ids = append(ids, fmt.Sprint(i))
+		}
+
+		_, err := getVideoInfo(&ids, &config, &mockHTTPClient{throwError: false})
+		if err == nil {
+			t.Errorf("Did not recieve error when given more than 50 IDs")
+		}
+
 	})
 }

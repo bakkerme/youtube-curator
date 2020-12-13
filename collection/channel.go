@@ -20,8 +20,10 @@ type YTChannel struct {
 
 // Video is a struct that represents a single video on disk
 type Video struct {
-	Path string
-	ID   string
+	Path     string
+	ID       string
+	FileType string
+	BasePath string
 }
 
 // ArchivalModeArchive specifies that all videos are to be archived
@@ -195,9 +197,16 @@ func getLocalVideosFromDirList(dirlist *[]os.FileInfo, path string) (*[]Video, e
 				return &videos, err
 			}
 
+			extension, err := getFileType(file.Name())
+			if err != nil {
+				return nil, err
+			}
+
 			video := Video{
 				videoPath,
 				id,
+				extension,
+				path,
 			}
 
 			videos = append(videos, video)

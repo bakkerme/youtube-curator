@@ -1,6 +1,7 @@
 package youtubeapi
 
 import (
+	"errors"
 	"fmt"
 	"hyperfocus.systems/youtube-curator-server/config"
 	"hyperfocus.systems/youtube-curator-server/utils"
@@ -23,6 +24,10 @@ func getVideoInfoURL(ids *[]string, accessKey string) string {
 }
 
 func getVideoInfo(ids *[]string, cf *config.Config, httpClient utils.YTCHTTPClient) (*VideoListResponse, error) {
+	if len(*ids) > 50 {
+		return nil, errors.New("YT API cannot get more than 50 IDs at a time")
+	}
+
 	url := getVideoInfoURL(ids, getAccessKey(cf))
 
 	resp, body, err := httpClient.Get(url)

@@ -12,19 +12,19 @@ type Provider interface {
 	Creator() string
 	PublishedAt() *time.Time
 	Duration() *time.Duration
-	SetMetadata(Metadata, string) error
 }
 
 // CommandProvider is an interface for different providers of metadata. This
 // can be used to implement metadata parsers for various types of video container
 // formats
 type CommandProvider interface {
-	Run(path string) (string, error)
+	Run(string) (string, error)
 	ParseTitle(string) (string, error)
 	ParseDescription(string) (string, error)
 	ParseCreator(string) (string, error)
 	ParsePublishedAt(string) (*time.Time, error)
 	ParseDuration(string) (*time.Duration, error)
+	Set(string, *Metadata) error
 }
 
 // Error represents a parse error. This is not necessarily fatal
@@ -36,8 +36,8 @@ type Error interface {
 
 // Response contains the videos metadata, and parse errors if the video could not be parsed fully
 type Response struct {
-	metadata   *Metadata
-	parseError *ParseError
+	Metadata   *Metadata
+	ParseError *ParseError
 }
 
 // Metadata represents the metadata for the loaded video
@@ -74,4 +74,10 @@ func GetVideoMetadata(path string, pr CommandProvider) (*Response, error) {
 	}
 
 	return buildVideoMetadataResponse(out, path, pr), nil
+}
+
+// SetVideoMetadata will set metadata on a video file given the correct
+// VideoMetadataCommandProvider for the type of video file
+func SetVideoMetadata(path string, metadata *Metadata, pr CommandProvider) error {
+	return pr.Set(path, metadata)
 }

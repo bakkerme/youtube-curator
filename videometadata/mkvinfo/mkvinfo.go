@@ -72,9 +72,9 @@ func (m MKVMetadataCommandProvider) ParseDuration(output string) (*time.Duration
 	return &duration, nil
 }
 
-// SetMetadata sets metadata on an mkv item
-func (m MKVMetadataCommandProvider) SetMetadata(metadata videometadata.Metadata, path string) error {
-	return errors.New("MKVInfo does not implement SetMetadata right now")
+// Set sets metadata on an mkv item
+func (m MKVMetadataCommandProvider) Set(path string, metadata videometadata.Metadata) error {
+	return errors.New("MKVInfo does not implement Set right now")
 }
 
 func parseOutputStringForRegex(regex string, output string) (string, error) {
