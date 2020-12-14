@@ -1,11 +1,81 @@
 package tageditor
 
 import (
+	"errors"
 	"fmt"
 	"hyperfocus.systems/youtube-curator-server/videometadata"
+	"reflect"
 	"testing"
 	"time"
 )
+
+type readMockOSCommand struct {
+	expectedCommand *[]string
+	expectedParams  *[][]string
+	output          *[]string
+	returnError     *[]bool
+	t               *testing.T
+	callCount       int
+}
+
+func (osc *readMockOSCommand) Run(name string, arg ...string) (*[]byte, error) {
+	if osc.returnError != nil && (*osc.returnError)[osc.callCount] {
+		return nil, errors.New("Gee willikers, looks like the server did a flopsy boingo")
+	}
+
+	if osc.expectedCommand != nil && (*osc.expectedCommand)[osc.callCount] != name {
+		osc.t.Errorf("Run recieved wrong command. Expected %+v, got %+v", (*osc.expectedCommand)[osc.callCount], name)
+	}
+
+	if osc.expectedParams != nil && !reflect.DeepEqual((*osc.expectedParams)[osc.callCount], arg) {
+		osc.t.Errorf("Run recieved wrong params. Expected %+v, got %+v", (*osc.expectedParams)[osc.callCount], arg)
+	}
+
+	if osc.output != nil {
+		out := []byte((*osc.output)[osc.callCount])
+		osc.callCount++
+		return &out, nil
+	}
+
+	osc.callCount++
+	out := []byte("")
+	return &out, nil
+}
+
+func TestReadMetadata(t *testing.T) {
+	t.Run("getMetadata should run two commands with correct results", func(t *testing.T) {
+		path := "/path"
+		commands := &[]string{"tageditor", "tageditor"}
+		params := &[][]string{[]string{"get", "-f", path}, []string{"info", "-f", path}}
+
+		output1 := "output1"
+		output2 := "output2"
+		output := &[]string{output1, output2}
+
+		result, err := getMetadata(path, &readMockOSCommand{expectedCommand: commands, expectedParams: params, output: output, t: t})
+		if err != nil {
+			t.Error(err)
+		}
+
+		if result != output1+output2 {
+			t.Errorf("getMetadata did not return correct output. Expected %s, got %s", output1+output2, result)
+		}
+	})
+
+	t.Run("getMetadata should fail the first command", func(t *testing.T) {
+		_, err := getMetadata("/path", &readMockOSCommand{returnError: &[]bool{true, false}})
+		if err == nil {
+			t.Error("Should have returned error")
+		}
+	})
+
+	t.Run("getMetadata should fail the second command", func(t *testing.T) {
+		_, err := getMetadata("/path", &readMockOSCommand{returnError: &[]bool{false, true}})
+		if err == nil {
+			t.Error("Should have returned error")
+		}
+	})
+}
 
 func TestStringParsers(t *testing.T) {
 	commandProvider := MP4MetadataCommandProvider{}
@@ -163,10 +233,32 @@ func TestStringParsers(t *testing.T) {
 	})
 }
 
+type writeMockOSCommand struct {
+	expectedCommand string
+	expectedParams  *[]string
+	returnError     bool
+	t               *testing.T
+}
+
+func (osc *writeMockOSCommand) Run(name string, arg ...string) (*[]byte, error) {
+	if osc.returnError {
+		return nil, errors.New("Gee willikers, looks like the server did a flopsy boingo")
+	}
+
+	if osc.expectedCommand != name {
+		osc.t.Errorf("Run recieved wrong command. Expected %s, got %s", osc.expectedCommand, name)
+	}
+
+	if !reflect.DeepEqual(*osc.expectedParams, arg) {
+		osc.t.Errorf("Run recieved wrong params. Expected %s, got %s", osc.expectedParams, arg)
+	}
+
+	return nil, nil
+}
+
 func TestWrite(t *testing.T) {
 	t.Run("buildTagEditorSetString returns a valid string for a metadata input", func(t *testing.T) {
 		publishedAt, err := time.Parse("2006-01-02", "1992-05-01")
-		fmt.Print(publishedAt.Format("2006-01-02") + "\n")
 		if err != nil {
 			t.Error("Failed to parse time string")
 		}
@@ -183,9 +275,14 @@ func TestWrite(t *testing.T) {
 			t.Errorf("buildTagEditorSetString returned an error when none was expected. Got %s", err)
 		}
 
-		expected := fmt.Sprintf("title=%s comment=%s artist=%s recorddate=%s", mt.Title, mt.Description, mt.Creator, "1992-05-01")
+		expected := []string{
+			"title=" + mt.Title,
+			"comment=" + mt.Description,
+			"artist=" + mt.Creator,
+			"recorddate=1992-05-01",
+		}
 
-		if str != expected {
+		if !reflect.DeepEqual(*str, expected) {
 			t.Errorf("buildTagEditorSetString did not return correct result. Expected\n%s\ngot\n%s", expected, str)
 		}
 	})
@@ -203,6 +300,36 @@ func TestWrite(t *testing.T) {
 			t.Error("buildTagEditorSetString did not return an error")
 		}
 	})
+
+	t.Run("writeTagMetadata runs the correct command provided", func(t *testing.T) {
+		path := "/path"
+		value := "title=test"
+		value2 := "title2=test2"
+		values := &[]string{value, value2}
+		mosc := &writeMockOSCommand{
+			expectedCommand: "tageditor",
+			expectedParams:  &[]string{"set", "-f", path, "--values", value, value2},
+			t:               t,
+		}
+
+		err := writeTagMetadata(values, path, mosc)
+		if err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("writeTagMetadata returns error if command fails", func(t *testing.T) {
+		mosc := &writeMockOSCommand{
+			t:           t,
+			returnError: true,
+		}
+
+		err := writeTagMetadata(&[]string{"string1", "string2"}, "/path", mosc)
+		if err == nil {
+			t.Error("writeTagMetadata should return error if command returns error")
+		}
+	})
+
 }
 
 func TestInterface(t *testing.T) {

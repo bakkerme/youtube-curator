@@ -19,6 +19,10 @@ func (m testMetadataCommandProvider) Run(path string) (string, error) {
 	return "", nil
 }
 
+func (m testMetadataCommandProvider) Set(path string, metadata *Metadata) error {
+	return nil
+}
+
 func (m testMetadataCommandProvider) ParseTitle(output string) (string, error) {
 	if m.Title == "" {
 		return "", errors.New("Bad Data")
@@ -299,8 +303,8 @@ func TestMetaDataParser(t *testing.T) {
 func testBrokenFieldsForInfoResponse(t *testing.T, field string, videoExpect *Metadata, metadataProvider *testMetadataCommandProvider) {
 	infoResponse := buildVideoMetadataResponse("", "/path", metadataProvider)
 
-	metadata := infoResponse.metadata
-	fpErr := infoResponse.parseError
+	metadata := infoResponse.Metadata
+	fpErr := infoResponse.ParseError
 
 	if fpErr.err == "" {
 		t.Errorf("Video Info Error should have returned error string")
@@ -331,12 +335,12 @@ func TestResponse(t *testing.T) {
 		}
 		infoResponse := buildVideoMetadataResponse("", "/path", &metadataProvider)
 
-		if infoResponse.parseError != nil {
-			t.Errorf("Video Response returned parse error when none was expected. Error: %s", infoResponse.parseError.Error())
+		if infoResponse.ParseError != nil {
+			t.Errorf("Video Response returned parse error when none was expected. Error: %s", infoResponse.ParseError.Error())
 		}
 
-		if !reflect.DeepEqual(*infoResponse.metadata, *videoExpect) {
-			t.Errorf("Parsed output did not match expected. Expected\n%+v\ngot\n%+v\n", *videoExpect, *infoResponse.metadata)
+		if !reflect.DeepEqual(*infoResponse.Metadata, *videoExpect) {
+			t.Errorf("Parsed output did not match expected. Expected\n%+v\ngot\n%+v\n", *videoExpect, *infoResponse.Metadata)
 		}
 	})
 

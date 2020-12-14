@@ -1,8 +1,10 @@
 package youtubeapi
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 )
 
 var vlVideo1 = Video{
@@ -201,11 +203,41 @@ func loadVideoListFullTestFile() ([]byte, error) {
 
 // LoadVideoListSingleTestFile loads the test file that is the counterpart to the VLExpected
 // struct, that way it can be loaded up for unmarshalling comparison testing
-func loadVideoListSingleTestFile() ([]byte, error) {
-	file, err := ioutil.ReadFile("./testfiles/videorequest-single.json")
+func loadFile(filePath string) ([]byte, error) {
+	file, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return file, fmt.Errorf("Loading VideoRequest json failed: %s", err)
 	}
 
 	return file, nil
+}
+
+var fakeErrorMessage = "The puppy-girl did the loudest bark"
+
+type mockHTTPClient struct {
+	throwError          bool
+	statusCodeToReturn  int
+	malformJSONResponse bool
+	responseFile        string
+}
+
+func (ht *mockHTTPClient) Get(url string) (*http.Response, []byte, error) {
+	testFile, err := loadFile(ht.responseFile)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if ht.throwError {
+		return nil, nil, errors.New(fakeErrorMessage)
+	}
+
+	response := &http.Response{
+		StatusCode: ht.statusCodeToReturn,
+	}
+
+	if ht.malformJSONResponse {
+		testFile = []byte("{[sdfsd{")
+	}
+
+	return response, testFile, nil
 }

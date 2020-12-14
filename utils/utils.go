@@ -3,6 +3,7 @@ package utils
 import (
 	"io/ioutil"
 	"net/http"
+	"os/exec"
 	"time"
 )
 
@@ -46,4 +47,18 @@ func (ht *HTTPClient) Get(url string) (*http.Response, []byte, error) {
 	}
 
 	return resp, body, err
+}
+
+// OSCommandProvider provides the ability to run commands on the OS level
+type OSCommandProvider interface {
+	Run(string, ...string) (*[]byte, error)
+}
+
+// OSCommand implements OSCommandProvider to provide the ability to run commands on the OS
+type OSCommand struct{}
+
+// Run runs a command on the OS
+func (osc *OSCommand) Run(name string, arg ...string) (*[]byte, error) {
+	out, err := exec.Command(name, arg...).Output()
+	return &out, err
 }

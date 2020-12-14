@@ -3,8 +3,8 @@ package tageditor
 import (
 	"errors"
 	"fmt"
+	"hyperfocus.systems/youtube-curator-server/utils"
 	"hyperfocus.systems/youtube-curator-server/videometadata"
-	"os/exec"
 	"regexp"
 	"strings"
 	"time"
@@ -15,17 +15,21 @@ type MP4MetadataCommandProvider struct{}
 
 // Run MP4Info on the provided file
 func (m MP4MetadataCommandProvider) Run(path string) (string, error) {
-	out, err := exec.Command("tageditor", "get", "-f", path).Output()
+	return getMetadata(path, &utils.OSCommand{})
+}
+
+func getMetadata(path string, osc utils.OSCommandProvider) (string, error) {
+	out, err := osc.Run("tageditor", "get", "-f", path)
 	if err != nil {
 		return "", fmt.Errorf("Could not load metadata for %s.\nResponse from tageditor was: %s\nError %s", path, out, err)
 	}
 
-	infoOut, err := exec.Command("tageditor", "info", "-f", path).Output()
+	infoOut, err := osc.Run("tageditor", "info", "-f", path)
 	if err != nil {
 		return "", fmt.Errorf("Could not load metadata for %s.\nResponse from tageditor was: %s\nError %s", path, out, err)
 	}
 
-	return string(out) + string(infoOut), nil
+	return string(*out) + string(*infoOut), nil
 }
 
 // ParseTitle parses the title from the MP4Info output
@@ -83,13 +87,25 @@ func (m MP4MetadataCommandProvider) ParseDuration(output string) (*time.Duration
 	return &duration, nil
 }
 
+func parseOutputStringForRegex(regex string, output string) (string, error) {
+	re := regexp.MustCompile(regex)
+	matches := re.FindStringSubmatch(output)
+
+	if matches == nil {
+		return "", fmt.Errorf("Failed to find content for regex %s", regex)
+	}
+
+	return strings.TrimSpace(matches[1]), nil
+}
+
 // Set sets metadata on an mp4 item
 func (m MP4MetadataCommandProvider) Set(path string, metadata *videometadata.Metadata) error {
 	values, err := buildTagEditorSetString(metadata)
 	if err != nil {
 		return err
 	}
-	return writeTagMetadata(values, path)
+
+	return writeTagMetadata(values, path, &utils.OSCommand{})
 }
 
 func buildTagEditorSetString(metadata *videometadata.Metadata) (*[]string, error) {
@@ -114,7 +130,7 @@ func buildTagEditorSetString(metadata *videometadata.Metadata) (*[]string, error
 	return &valueString, nil
 }
 
-func writeTagMetadata(value *[]string, path string) error {
+func writeTagMetadata(value *[]string, path string, osCmd utils.OSCommandProvider) error {
 	command := []string{
 		"set",
 		"-f",
@@ -124,21 +140,10 @@ func writeTagMetadata(value *[]string, path string) error {
 
 	command = append(command, (*value)...)
 
-	out, err := exec.Command("tageditor", command...).Output()
+	out, err := osCmd.Run("tageditor", command...)
 	if err != nil {
 		return fmt.Errorf("Could not write metadata for %s.\nResponse from tageditor was: %s\nError %s", path, out, err)
 	}
 
 	return nil
-}
-
-func parseOutputStringForRegex(regex string, output string) (string, error) {
-	re := regexp.MustCompile(regex)
-	matches := re.FindStringSubmatch(output)
-
-	if matches == nil {
-		return "", fmt.Errorf("Failed to find content for regex %s", regex)
-	}
-
-	return strings.TrimSpace(matches[1]), nil
 }

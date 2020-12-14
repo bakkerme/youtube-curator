@@ -73,7 +73,7 @@ func (m MKVMetadataCommandProvider) ParseDuration(output string) (*time.Duration
 }
 
 // Set sets metadata on an mkv item
-func (m MKVMetadataCommandProvider) Set(path string, metadata videometadata.Metadata) error {
+func (m MKVMetadataCommandProvider) Set(path string, metadata *videometadata.Metadata) error {
 	return errors.New("MKVInfo does not implement Set right now")
 }
 

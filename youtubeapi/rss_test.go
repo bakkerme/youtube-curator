@@ -96,3 +96,33 @@ func TestConvertRSSStringToRSS(t *testing.T) {
 		}
 	})
 }
+
+func TestGetRSSFeed(t *testing.T) {
+	t.Run("getRSSFeed pulls data over HTTP and converts it to RSS", func(t *testing.T) {
+		rss, err := getRSSFeed("testurl.homebase", &mockHTTPClient{statusCodeToReturn: 200, responseFile: "./testfiles/test.xml"})
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		if !reflect.DeepEqual(*rss, rssExpect) {
+			t.Errorf("RSS results are different. Expected %+v, got %+v", rssExpect, *rss)
+		}
+	})
+
+	t.Run("getRSSFeed returns an error if HTTP Client returns an error", func(t *testing.T) {
+		_, err := getRSSFeed("testurl.homebase", &mockHTTPClient{throwError: true})
+
+		if err == nil {
+			t.Errorf("Expected getRSSFeed would return an error")
+		}
+	})
+
+	t.Run("getRSSFeed returns an error if HTTP status code is not 200", func(t *testing.T) {
+		_, err := getRSSFeed("testurl.homebase", &mockHTTPClient{statusCodeToReturn: 400})
+
+		if err == nil {
+			t.Errorf("Expected getRSSFeed would return an error")
+		}
+	})
+}

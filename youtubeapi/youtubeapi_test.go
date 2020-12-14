@@ -1,10 +1,8 @@
 package youtubeapi
 
 import (
-	"errors"
 	"fmt"
 	"hyperfocus.systems/youtube-curator-server/config"
-	"net/http"
 	"reflect"
 	"strings"
 	"testing"
@@ -49,36 +47,8 @@ func TestGetVideoInfoURL(t *testing.T) {
 	})
 }
 
-var fakeErrorMessage = "The PuppyGirl did the loudest bark"
-
-type mockHTTPClient struct {
-	throwError          bool
-	statusCodeToReturn  int
-	malformJSONResponse bool
-}
-
-func (ht *mockHTTPClient) Get(url string) (*http.Response, []byte, error) {
-	testFile, err := loadVideoListSingleTestFile()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	if ht.throwError {
-		return nil, nil, errors.New(fakeErrorMessage)
-	}
-
-	response := &http.Response{
-		StatusCode: ht.statusCodeToReturn,
-	}
-
-	if ht.malformJSONResponse {
-		testFile = []byte("{[sdfsd{")
-	}
-
-	return response, testFile, nil
-}
-
 func TestGetVideoInfo(t *testing.T) {
+	testFile := "./testfiles/videorequest-single.json"
 	t.Run("getVideoInfo returns valid video info", func(t *testing.T) {
 		apiTestString := "123abc"
 
@@ -86,7 +56,7 @@ func TestGetVideoInfo(t *testing.T) {
 			YoutubeAPIKey: apiTestString,
 		}
 
-		videoListResponse, err := getVideoInfo(&[]string{"18-elPdai_1"}, &config, &mockHTTPClient{statusCodeToReturn: 200})
+		videoListResponse, err := getVideoInfo(&[]string{"18-elPdai_1"}, &config, &mockHTTPClient{statusCodeToReturn: 200, responseFile: testFile})
 		if err != nil {
 			t.Errorf("Got error when running getVideoInfo %s", err)
 		}
@@ -103,7 +73,7 @@ func TestGetVideoInfo(t *testing.T) {
 			YoutubeAPIKey: apiTestString,
 		}
 
-		_, err := getVideoInfo(&[]string{"18-elPdai_1"}, &config, &mockHTTPClient{throwError: true})
+		_, err := getVideoInfo(&[]string{"18-elPdai_1"}, &config, &mockHTTPClient{throwError: true, responseFile: testFile})
 		if err == nil {
 			t.Errorf("Did not recieve error when HTTP Request threw error")
 		}
@@ -120,7 +90,7 @@ func TestGetVideoInfo(t *testing.T) {
 			YoutubeAPIKey: apiTestString,
 		}
 
-		_, err := getVideoInfo(&[]string{"18-elPdai_1"}, &config, &mockHTTPClient{malformJSONResponse: true})
+		_, err := getVideoInfo(&[]string{"18-elPdai_1"}, &config, &mockHTTPClient{malformJSONResponse: true, responseFile: testFile})
 		if err == nil {
 			t.Errorf("Did not recieve error when HTTP Request returned malformed JSON")
 		}
@@ -138,7 +108,7 @@ func TestGetVideoInfo(t *testing.T) {
 			ids = append(ids, fmt.Sprint(i))
 		}
 
-		_, err := getVideoInfo(&ids, &config, &mockHTTPClient{throwError: false})
+		_, err := getVideoInfo(&ids, &config, &mockHTTPClient{throwError: false, responseFile: testFile})
 		if err == nil {
 			t.Errorf("Did not recieve error when given more than 50 IDs")
 		}

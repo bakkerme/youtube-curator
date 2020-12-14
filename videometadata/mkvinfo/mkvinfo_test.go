@@ -169,6 +169,18 @@ func TestStringParsers(t *testing.T) {
 	})
 }
 
+func TestCommands(t *testing.T) {
+	t.Run("MKVMetadataCommandProvider should throw error for Set since it's unimpemented :)", func(t *testing.T) {
+		var cmdProv videometadata.CommandProvider
+		cmdProv = MKVMetadataCommandProvider{}
+
+		err := cmdProv.Set("", nil)
+		if err == nil {
+			t.Error("Who implemented my function without telling me!!!! wow")
+		}
+	})
+}
+
 func TestInterface(t *testing.T) {
 	t.Run("MKVMetadataCommandProvider should be a CommandProvider", func(t *testing.T) {
 		var cmdProv videometadata.CommandProvider

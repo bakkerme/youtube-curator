@@ -3,9 +3,7 @@ package youtubeapi
 import (
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"time"
+	"hyperfocus.systems/youtube-curator-server/utils"
 )
 
 // RSSThumbnail represents the thumbnail image of a video
@@ -44,19 +42,10 @@ type RSS struct {
 	VideoEntry []RSSVideoEntry `xml:"entry"`
 }
 
-func getRSSFeed(url string) (*RSS, error) {
-	tr := &http.Transport{
-		IdleConnTimeout: 10 * time.Second,
-	}
-	client := &http.Client{Transport: tr}
-	resp, err := client.Get(url)
+func getRSSFeed(url string, httpClient utils.YTCHTTPClient) (*RSS, error) {
+	resp, body, err := httpClient.Get(url)
 	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Returned error %s for address %s", err, url)
 	}
 
 	if resp.StatusCode == 200 {

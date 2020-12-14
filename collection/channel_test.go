@@ -80,9 +80,9 @@ func TestGetEntriesNotInVideoList(t *testing.T) {
 		}
 
 		videos := []Video{
-			Video{"Video 1-12345678911.mp4", "12345678911"},
-			Video{"Video 2-abcdefghijk.mp4", "abcdefghijk"},
-			Video{"Video 3-lmnopqrxtuv.mp4", "lmnopqrxtuv"},
+			Video{"Video 1-12345678911.mp4", "12345678911", "mp4", "/"},
+			Video{"Video 2-abcdefghijk.mp4", "abcdefghijk", "mp4", "/"},
+			Video{"Video 3-lmnopqrxtuv.mp4", "lmnopqrxtuv", "mp4", "/"},
 		}
 
 		entriesToGet := GetEntriesNotInVideoList(&entries, &videos)
@@ -103,9 +103,9 @@ func TestGetEntriesNotInVideoList(t *testing.T) {
 		}
 
 		videos := []Video{
-			Video{"Video 1-12345678911.mp4", "12345678911"},
-			Video{"Video 2-abcdefghijk.mp4", "abcdefghijk"},
-			Video{"Video 3-lmnopqrxtuv.mp4", "lmnopqrxtuv"},
+			Video{"Video 1-12345678911.mp4", "12345678911", "mp4", "/"},
+			Video{"Video 2-abcdefghijk.mp4", "abcdefghijk", "mp4", "/"},
+			Video{"Video 3-lmnopqrxtuv.mp4", "lmnopqrxtuv", "mp4", "/"},
 		}
 
 		entriesToGet := GetEntriesNotInVideoList(&entries, &videos)
@@ -138,9 +138,9 @@ func TestGetEntriesNotInVideoList(t *testing.T) {
 		entries := []youtubeapi.RSSVideoEntry{}
 
 		videos := []Video{
-			Video{"Video 1-12345678911.mp4", "12345678911"},
-			Video{"Video 2-abcdefghijk.mp4", "abcdefghijk"},
-			Video{"Video 3-lmnopqrxtuv.mp4", "lmnopqrxtuv"},
+			Video{"Video 1-12345678911.mp4", "12345678911", "mp4", "/"},
+			Video{"Video 2-abcdefghijk.mp4", "abcdefghijk", "mp4", "/"},
+			Video{"Video 3-lmnopqrxtuv.mp4", "lmnopqrxtuv", "mp4", "/"},
 		}
 
 		entriesToGet := GetEntriesNotInVideoList(&entries, &videos)
@@ -159,9 +159,9 @@ func TestIsEntryInVideoList(t *testing.T) {
 		entry := youtubeapi.RSSVideoEntry{"12345678911", "Video 1", youtubeapi.RSSLink{"http://link"}, "", "", mediaGroup}
 
 		videos := []Video{
-			Video{"Video 1-12345678911.mp4", "12345678911"},
-			Video{"Video 2-abcdefghijk.mp4", "abcdefghijk"},
-			Video{"Video 3-lmnopqrxtuv.mp4", "lmnopqrxtuv"},
+			Video{"Video 1-12345678911.mp4", "12345678911", "mp4", "/"},
+			Video{"Video 2-abcdefghijk.mp4", "abcdefghijk", "mp4", "/"},
+			Video{"Video 3-lmnopqrxtuv.mp4", "lmnopqrxtuv", "mp4", "/"},
 		}
 
 		if !isEntryInVideoList(&entry, &videos) {
@@ -175,9 +175,9 @@ func TestIsEntryInVideoList(t *testing.T) {
 		entry := youtubeapi.RSSVideoEntry{"BADID123456", "Video 1", youtubeapi.RSSLink{"http://link"}, "", "", mediaGroup}
 
 		videos := []Video{
-			Video{"Video 1-12345678911.mp4", "12345678911"},
-			Video{"Video 2-abcdefghijk.mp4", "abcdefghijk"},
-			Video{"Video 3-lmnopqrxtuv.mp4", "lmnopqrxtuv"},
+			Video{"Video 1-12345678911.mp4", "12345678911", "mp4", "/"},
+			Video{"Video 2-abcdefghijk.mp4", "abcdefghijk", "mp4", "/"},
+			Video{"Video 3-lmnopqrxtuv.mp4", "lmnopqrxtuv", "mp4", "/"},
 		}
 
 		if isEntryInVideoList(&entry, &videos) {
@@ -264,18 +264,26 @@ func TestGetLocalVideosFromDirList(t *testing.T) {
 			Video{
 				path + "/" + dirlist[0].Name(),
 				"dCqJ6iPHus0",
+				"mp4",
+				path,
 			},
 			Video{
 				path + "/" + dirlist[2].Name(),
 				"-AC4HwzAK7A",
+				"mp4",
+				path,
 			},
 			Video{
 				path + "/" + dirlist[4].Name(),
 				"_gPsIiKtybA",
+				"mp4",
+				path,
 			},
 			Video{
 				path + "/" + dirlist[5].Name(),
 				"basAIdKsyIA",
+				"mkv",
+				path,
 			},
 		}
 

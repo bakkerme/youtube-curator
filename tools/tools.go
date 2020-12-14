@@ -20,7 +20,7 @@ type videoUpdateResult struct {
 }
 
 func main() {
-	ytc := collection.Feeds["Ashens"]
+	ytc := collection.Feeds["TechnologyConnections"]
 	videos, err := collection.GetLocalVideosByYTChannel(&ytc)
 	if err != nil {
 		panic(err)
@@ -136,7 +136,11 @@ func chunkIntSlice(stringSlice *[]string, itemsPerChunk int) *[][]string {
 
 	for i := 0; i < int(chunks); i++ {
 		start := itemsPerChunk * i
-		stringChunkSlice = append(stringChunkSlice, (*stringSlice)[start:start+itemsPerChunk])
+		end := start + itemsPerChunk
+		if end > len(*stringSlice) {
+			end = len(*stringSlice)
+		}
+		stringChunkSlice = append(stringChunkSlice, (*stringSlice)[start:end])
 	}
 
 	return &stringChunkSlice
