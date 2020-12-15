@@ -190,17 +190,6 @@ var vlExpectedSingleVideo = VideoListResponse{
 	},
 }
 
-// LoadVideoListFullTestFile loads the test file that is the counterpart to the VLExpected
-// struct, that way it can be loaded up for unmarshalling comparison testing
-func loadVideoListFullTestFile() ([]byte, error) {
-	file, err := ioutil.ReadFile("./testfiles/videorequest.json")
-	if err != nil {
-		return file, fmt.Errorf("Loading VideoRequest json failed: %s", err)
-	}
-
-	return file, nil
-}
-
 // LoadVideoListSingleTestFile loads the test file that is the counterpart to the VLExpected
 // struct, that way it can be loaded up for unmarshalling comparison testing
 func loadFile(filePath string) ([]byte, error) {
@@ -222,17 +211,27 @@ type mockHTTPClient struct {
 }
 
 func (ht *mockHTTPClient) Get(url string) (*http.Response, []byte, error) {
-	testFile, err := loadFile(ht.responseFile)
-	if err != nil {
-		return nil, nil, err
+	var testFile []byte
+	if ht.responseFile != "" {
+		tt, err := loadFile(ht.responseFile)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		testFile = tt
 	}
 
 	if ht.throwError {
 		return nil, nil, errors.New(fakeErrorMessage)
 	}
 
+	statuscode := 200
+	if ht.statusCodeToReturn > 0 {
+		statuscode = ht.statusCodeToReturn
+	}
+
 	response := &http.Response{
-		StatusCode: ht.statusCodeToReturn,
+		StatusCode: statuscode,
 	}
 
 	if ht.malformJSONResponse {

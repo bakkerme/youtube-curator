@@ -65,7 +65,7 @@ func (m MP4MetadataCommandProvider) ParsePublishedAt(output string) (*time.Time,
 // ParseDuration parses the duration from the MP4Info output
 func (m MP4MetadataCommandProvider) ParseDuration(output string) (*time.Duration, error) {
 	hourRegex := `(?m)(?P<hour>\d*)\shr`
-	minuteRegex := `(?m)(?P<hour>\d*)\smin`
+	minuteRegex := `(?m)(?P<minutes>\d*)\smin`
 	secondsRegex := `(?m)(?P<seconds>\d*)\ss`
 
 	hours, err := parseOutputStringForRegex(hourRegex, output)

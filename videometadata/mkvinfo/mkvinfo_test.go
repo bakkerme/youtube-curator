@@ -1,11 +1,77 @@
 package mkvinfo
 
 import (
+	"errors"
 	"fmt"
 	"hyperfocus.systems/youtube-curator-server/videometadata"
+	"reflect"
 	"testing"
 	"time"
 )
+
+type readMockOSCommand struct {
+	expectedCommand *string
+	expectedParams  *[]string
+	output          *string
+	returnError     bool
+	t               *testing.T
+	callCount       int
+}
+
+func (osc *readMockOSCommand) Run(name string, arg ...string) (*[]byte, error) {
+	if osc.returnError {
+		return nil, errors.New("Gee willikers, looks like the server did a flopsy boingo")
+	}
+
+	if osc.expectedCommand != nil && *osc.expectedCommand != name {
+		osc.t.Errorf("Run recieved wrong command. Expected %+v, got %+v", osc.expectedCommand, name)
+	}
+
+	if osc.expectedParams != nil && !reflect.DeepEqual(*osc.expectedParams, arg) {
+		osc.t.Errorf("Run recieved wrong params. Expected %+v, got %+v", osc.expectedParams, arg)
+	}
+
+	if osc.output != nil {
+		out := []byte(*osc.output)
+		osc.callCount++
+		return &out, nil
+	}
+
+	osc.callCount++
+	out := []byte("")
+	return &out, nil
+}
+
+func TestReadMetadata(t *testing.T) {
+	t.Run("getMetadata should run two commands with correct results", func(t *testing.T) {
+		path := "/path"
+		commands := "mkvinfo"
+		params := []string{path}
+
+		output := "output1"
+
+		result, err := getMetadata(path, &readMockOSCommand{
+			expectedCommand: &commands,
+			expectedParams:  &params,
+			output:          &output,
+			t:               t,
+		})
+		if err != nil {
+			t.Error(err)
+		}
+
+		if result != output {
+			t.Errorf("getMetadata did not return correct output. Expected %s, got %s", output, result)
+		}
+	})
+
+	t.Run("getMetadata should fail", func(t *testing.T) {
+		_, err := getMetadata("/path", &readMockOSCommand{returnError: true, t: t})
+		if err == nil {
+			t.Error("Should have returned error")
+		}
+	})
+}
 
 func TestStringParsers(t *testing.T) {
 	commandProvider := MKVMetadataCommandProvider{}
@@ -122,6 +188,17 @@ func TestStringParsers(t *testing.T) {
 		}
 	})
 
+	t.Run("parsePublishedAt should return an error if the publishedAt date is invalid", func(t *testing.T) {
+		value := `| + Name: DATE
+|  + String: asdfl
+|`
+		_, err := commandProvider.ParsePublishedAt(value)
+
+		if err == nil {
+			t.Errorf("parsePublishedAt did not return an error on a bad input")
+		}
+	})
+
 	t.Run("parseDuration should parse out a duration", func(t *testing.T) {
 		var expectedDuration time.Duration
 		expectedDuration = 1692000000000
@@ -140,6 +217,24 @@ func TestStringParsers(t *testing.T) {
 
 	t.Run("parseDuration should return an error if there is no duration", func(t *testing.T) {
 		value := fmt.Sprintf("| SOME BAD DATA")
+		_, err := commandProvider.ParseDuration(value)
+
+		if err == nil {
+			t.Errorf("parseDuration did not return an error on a bad input")
+		}
+	})
+
+	t.Run("parseDuration should return an error if the duration is invalid", func(t *testing.T) {
+		value := "| + Duration: asdfsdfsdf"
+		_, err := commandProvider.ParseDuration(value)
+
+		if err == nil {
+			t.Errorf("parseDuration did not return an error on a bad input")
+		}
+	})
+
+	t.Run("parseDuration should parse out a duration", func(t *testing.T) {
+		value := "| + Duration: 00:28:-20.563000000"
 		_, err := commandProvider.ParseDuration(value)
 
 		if err == nil {

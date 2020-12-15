@@ -186,6 +186,15 @@ func TestStringParsers(t *testing.T) {
 		}
 	})
 
+	t.Run("parsePublishedAt should return an error if the publishedAt is not a valid date", func(t *testing.T) {
+		value := fmt.Sprintf("Record date           1as23332423")
+		_, err := commandProvider.ParsePublishedAt(value)
+
+		if err == nil {
+			t.Errorf("parsePublishedAt did not return an error on a bad input")
+		}
+	})
+
 	t.Run("parseDuration should parse out a duration", func(t *testing.T) {
 		var expectedDuration time.Duration
 		expectedDuration = 4555000000000
@@ -204,6 +213,33 @@ func TestStringParsers(t *testing.T) {
 
 	t.Run("parseDuration should return an error if there is no duration", func(t *testing.T) {
 		value := fmt.Sprintf("SOME BAD DATA")
+		_, err := commandProvider.ParseDuration(value)
+
+		if err == nil {
+			t.Errorf("parseDuration did not return an error on a bad input")
+		}
+	})
+
+	t.Run("parseDuration should return an error for invalid hours", func(t *testing.T) {
+		value := "Duration                      55 s 942 ms 290 µs 200 ns"
+		_, err := commandProvider.ParseDuration(value)
+
+		if err == nil {
+			t.Errorf("parseDuration did not return an error on a bad input")
+		}
+	})
+
+	t.Run("parseDuration should return an error for invalid minutes", func(t *testing.T) {
+		value := "Duration                      1 hr 55 s 942 ms 290 µs 200 ns"
+		_, err := commandProvider.ParseDuration(value)
+
+		if err == nil {
+			t.Errorf("parseDuration did not return an error on a bad input")
+		}
+	})
+
+	t.Run("parseDuration should return an error for invalid seconds", func(t *testing.T) {
+		value := "Duration                      1 hr 15 min 942 ms 290 µs 200 ns"
 		_, err := commandProvider.ParseDuration(value)
 
 		if err == nil {
@@ -330,6 +366,22 @@ func TestWrite(t *testing.T) {
 		}
 	})
 
+	t.Run("Set should return an error if buildTagEditorSetString fails", func(t *testing.T) {
+		mt := &videometadata.Metadata{
+			Title:       "",
+			Description: "",
+			Creator:     "",
+			PublishedAt: nil,
+		}
+
+		var cmdProv videometadata.CommandProvider
+		cmdProv = MP4MetadataCommandProvider{}
+
+		err := cmdProv.Set("/dev/null", mt)
+		if err == nil {
+			t.Error("Set should return an error if buildTagEditorSetString fails")
+		}
+	})
 }
 
 func TestInterface(t *testing.T) {

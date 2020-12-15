@@ -1,6 +1,7 @@
 package youtubeapi
 
 import (
+	"fmt"
 	"io/ioutil"
 	"reflect"
 	"testing"
@@ -121,6 +122,7 @@ func TestGetRSSFeed(t *testing.T) {
 	t.Run("getRSSFeed returns an error if HTTP status code is not 200", func(t *testing.T) {
 		_, err := getRSSFeed("testurl.homebase", &mockHTTPClient{statusCodeToReturn: 400})
 
+		fmt.Println(err)
 		if err == nil {
 			t.Errorf("Expected getRSSFeed would return an error")
 		}

@@ -3,6 +3,7 @@ package utils
 import (
 	"io/ioutil"
 	"net/http"
+	"os"
 	"os/exec"
 	"time"
 )
@@ -61,4 +62,17 @@ type OSCommand struct{}
 func (osc *OSCommand) Run(name string, arg ...string) (*[]byte, error) {
 	out, err := exec.Command(name, arg...).Output()
 	return &out, err
+}
+
+// DirReaderProvider provides the ability to read file directories on disk
+type DirReaderProvider interface {
+	ReadDir(dirname string) ([]os.FileInfo, error)
+}
+
+// DirReader implements DirReaderProvider to provide the ability to read file directories on disk
+type DirReader struct{}
+
+// ReadDir reads the contents of a directory
+func (dr *DirReader) ReadDir(dirname string) ([]os.FileInfo, error) {
+	return ioutil.ReadDir(dirname)
 }

@@ -3,8 +3,8 @@ package mkvinfo
 import (
 	"errors"
 	"fmt"
+	"hyperfocus.systems/youtube-curator-server/utils"
 	"hyperfocus.systems/youtube-curator-server/videometadata"
-	"os/exec"
 	"regexp"
 	"strings"
 	"time"
@@ -15,12 +15,16 @@ type MKVMetadataCommandProvider struct{}
 
 // Run MKVInfo on the provided file
 func (m MKVMetadataCommandProvider) Run(path string) (string, error) {
-	out, err := exec.Command("/usr/bin/mkvinfo", path).Output()
+	return getMetadata(path, &utils.OSCommand{})
+}
+
+func getMetadata(path string, osc utils.OSCommandProvider) (string, error) {
+	out, err := osc.Run("mkvinfo", path)
 	if err != nil {
 		return "", fmt.Errorf("Could not load metadata for %s.\nResponse from mkvinfo was: %s\nError %s", path, out, err)
 	}
 
-	return string(out), nil
+	return string(*out), nil
 }
 
 // ParseTitle parses the title from the MKVInfo output
@@ -62,6 +66,11 @@ func (m MKVMetadataCommandProvider) ParseDuration(output string) (*time.Duration
 
 	milisecondless := strings.Split(str, ".")[0]
 	units := strings.Split(milisecondless, ":")
+
+	if len(units) != 3 {
+		return nil, fmt.Errorf("Duration is invalid. Got %s", str)
+	}
+
 	durationString := fmt.Sprintf("%sh%sm%ss", units[0], units[1], units[2])
 	duration, err := time.ParseDuration(durationString)
 

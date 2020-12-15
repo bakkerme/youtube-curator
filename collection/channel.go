@@ -3,8 +3,8 @@ package collection
 import (
 	"errors"
 	"fmt"
+	"hyperfocus.systems/youtube-curator-server/utils"
 	"hyperfocus.systems/youtube-curator-server/youtubeapi"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -148,11 +148,11 @@ func getVideoIDFromFileName(filename string) (string, error) {
 	re := regexp.MustCompile(`(\..{3}$)`)
 	withoutType := re.ReplaceAllString(filename, "")
 
-	id := withoutType[len(withoutType)-11 : len(withoutType)] // Get last 11 chars
-
-	if id == "" {
+	if len(withoutType) < 11 {
 		return "", parseError
 	}
+
+	id := withoutType[len(withoutType)-11 : len(withoutType)] // Get last 11 chars
 
 	if len(id) != len(strings.ReplaceAll(id, " ", "")) { // This is probably not an ID
 		return "", parseError
@@ -176,8 +176,12 @@ func isEntryInVideoList(entry *youtubeapi.RSSVideoEntry, videos *[]Video) bool {
 
 // GetLocalVideosByYTChannel is given a YTChannel, return the Videos on disk that are under that YTChannel
 func GetLocalVideosByYTChannel(channel *YTChannel) (*[]Video, error) {
+	return getLocalVideosFromDisk(channel, &utils.DirReader{})
+}
+
+func getLocalVideosFromDisk(channel *YTChannel, dr utils.DirReaderProvider) (*[]Video, error) {
 	path := "/media/Drive/Videos/Youtube/" + channel.Name
-	dirlist, err := ioutil.ReadDir(path)
+	dirlist, err := dr.ReadDir(path)
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +196,7 @@ func getLocalVideosFromDirList(dirlist *[]os.FileInfo, path string) (*[]Video, e
 
 		if isValidVideo {
 			videoPath := path + "/" + file.Name()
-			id, err := getVideoIDFromFileName(videoPath)
+			id, err := getVideoIDFromFileName(file.Name())
 			if err != nil {
 				return &videos, err
 			}

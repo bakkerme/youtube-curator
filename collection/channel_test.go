@@ -41,6 +41,14 @@ func TestGetVideoIDFromFileName(t *testing.T) {
 		}
 	})
 
+	t.Run("Throws error for titless video", func(t *testing.T) {
+		test := ""
+		testResult, err := getVideoIDFromFileName(test)
+		if err == nil {
+			t.Errorf("Video with no ID should return error, returned: %s", testResult)
+		}
+	})
+
 	t.Run("Parses ID from video title with dash in ID", func(t *testing.T) {
 		id := "1kt7-O837H8"
 		test := "Test Video - ID with dash 1kt7-O837H8.mp4"
@@ -224,69 +232,69 @@ func (f MockFileInfo) Sys() interface{} {
 }
 
 func TestGetLocalVideosFromDirList(t *testing.T) {
+	dirlist := []os.FileInfo{
+		MockFileInfo{
+			"The Macintosh LC-dCqJ6iPHus0.mp4",
+			84000000,
+			false,
+		},
+		MockFileInfo{
+			"Bad File.description",
+			31000000,
+			false,
+		},
+		MockFileInfo{
+			"The Macintosh Quadra 800--AC4HwzAK7A.mp4",
+			31000000,
+			false,
+		},
+		MockFileInfo{
+			"Bad File.x",
+			31000000,
+			false,
+		},
+		MockFileInfo{
+			"The Macintosh SE-_gPsIiKtybA.mp4",
+			32000000,
+			false,
+		},
+		MockFileInfo{
+			"My Video-basAIdKsyIA.mkv",
+			33000000,
+			false,
+		},
+	}
+
+	path := "/test/path"
+
+	expectedVideos := []Video{
+		Video{
+			path + "/" + dirlist[0].Name(),
+			"dCqJ6iPHus0",
+			"mp4",
+			path,
+		},
+		Video{
+			path + "/" + dirlist[2].Name(),
+			"-AC4HwzAK7A",
+			"mp4",
+			path,
+		},
+		Video{
+			path + "/" + dirlist[4].Name(),
+			"_gPsIiKtybA",
+			"mp4",
+			path,
+		},
+		Video{
+			path + "/" + dirlist[5].Name(),
+			"basAIdKsyIA",
+			"mkv",
+			path,
+		},
+	}
+
 	t.Run("With valid Dirlist", func(t *testing.T) {
-		dirlist := []os.FileInfo{
-			MockFileInfo{
-				"The Macintosh LC-dCqJ6iPHus0.mp4",
-				84000000,
-				false,
-			},
-			MockFileInfo{
-				"Bad File.description",
-				31000000,
-				false,
-			},
-			MockFileInfo{
-				"The Macintosh Quadra 800--AC4HwzAK7A.mp4",
-				31000000,
-				false,
-			},
-			MockFileInfo{
-				"Bad File.x",
-				31000000,
-				false,
-			},
-			MockFileInfo{
-				"The Macintosh SE-_gPsIiKtybA.mp4",
-				32000000,
-				false,
-			},
-			MockFileInfo{
-				"My Video-basAIdKsyIA.mkv",
-				33000000,
-				false,
-			},
-		}
-
-		path := "/test/path"
-
-		expectedVideos := []Video{
-			Video{
-				path + "/" + dirlist[0].Name(),
-				"dCqJ6iPHus0",
-				"mp4",
-				path,
-			},
-			Video{
-				path + "/" + dirlist[2].Name(),
-				"-AC4HwzAK7A",
-				"mp4",
-				path,
-			},
-			Video{
-				path + "/" + dirlist[4].Name(),
-				"_gPsIiKtybA",
-				"mp4",
-				path,
-			},
-			Video{
-				path + "/" + dirlist[5].Name(),
-				"basAIdKsyIA",
-				"mkv",
-				path,
-			},
-		}
-
 		videos, err := getLocalVideosFromDirList(&dirlist, path)
 		if err != nil {
 			t.Errorf("getLocalVideosFromDirList returned an error %s", err)

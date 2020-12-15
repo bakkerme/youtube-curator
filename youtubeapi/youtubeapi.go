@@ -8,6 +8,11 @@ import (
 	"strings"
 )
 
+// GetVideoInfo gets information on the video whos IDs are provided from the Youtube API
+func GetVideoInfo(ids *[]string, cf *config.Config) (*VideoListResponse, error) {
+	return getVideoInfo(ids, cf, &utils.HTTPClient{})
+}
+
 func getAccessKey(cf *config.Config) string {
 	return cf.YoutubeAPIKey
 }
@@ -47,9 +52,4 @@ func getVideoInfo(ids *[]string, cf *config.Config, httpClient utils.YTCHTTPClie
 	}
 
 	return videoResponse, nil
-}
-
-// GetVideoInfo gets information on the video whos IDs are provided from the Youtube API
-func GetVideoInfo(ids *[]string, cf *config.Config) (*VideoListResponse, error) {
-	return getVideoInfo(ids, cf, &utils.HTTPClient{})
 }

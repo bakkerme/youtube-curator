@@ -96,6 +96,19 @@ func TestGetVideoInfo(t *testing.T) {
 		}
 	})
 
+	t.Run("getVideoInfo throws error if HTTP Get returns 400 status code", func(t *testing.T) {
+		apiTestString := "123abc"
+
+		config := config.Config{
+			YoutubeAPIKey: apiTestString,
+		}
+
+		_, err := getVideoInfo(&[]string{"18-elPdai_1"}, &config, &mockHTTPClient{statusCodeToReturn: 400})
+		if err == nil {
+			t.Errorf("Did not recieve error when HTTP Request returned 400")
+		}
+	})
+
 	t.Run("getVideoInfo throws error if given more than 50 IDs", func(t *testing.T) {
 		apiTestString := "123abc"
 
@@ -104,7 +117,7 @@ func TestGetVideoInfo(t *testing.T) {
 		}
 
 		var ids []string
-		for i := 0; i < 50; i++ {
+		for i := 0; i < 51; i++ {
 			ids = append(ids, fmt.Sprint(i))
 		}
 
