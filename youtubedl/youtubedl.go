@@ -10,7 +10,7 @@ import (
 var youtubeDLCommand = []string{
 	"youtube-dl",
 	"--format",
-	"(bestvideo[vcodec^=avc1][height=1080][fps>30]/bestvideo[vcodec^=avc1][height=1080]/bestvideo[vcodec^=avc1][height=720][fps>30]/bestvideo[vcodec^=avc1][height=720]/bestvideo[vcodec^=avc1][height=480][fps>30]/bestvideo[vcodec^=avc1][height=480]/bestvideo[vcodec^=avc1][height=360][fps>30]/bestvideo[vcodec^=avc1][height=360]/bestvideo[vcodec^=avc1][height=240][fps>30]/bestvideo[vcodec^=avc1][height=240]/bestvideo[vcodec^=avc1][height=144][fps>30]/bestvideo[vcodec^=avc1][height=144]/bestvideo[vcodec^=avc1])+(bestaudio[acodec^=mp4a]/bestaudio)/best",
+	"\"(bestvideo[vcodec^=avc1][height=1080][fps>30]/bestvideo[vcodec^=avc1][height=1080]/bestvideo[vcodec^=avc1][height=720][fps>30]/bestvideo[vcodec^=avc1][height=720]/bestvideo[vcodec^=avc1][height=480][fps>30]/bestvideo[vcodec^=avc1][height=480]/bestvideo[vcodec^=avc1][height=360][fps>30]/bestvideo[vcodec^=avc1][height=360]/bestvideo[vcodec^=avc1][height=240][fps>30]/bestvideo[vcodec^=avc1][height=240]/bestvideo[vcodec^=avc1][height=144][fps>30]/bestvideo[vcodec^=avc1][height=144]/bestvideo[vcodec^=avc1])+(bestaudio[acodec^=mp4a]/bestaudio)/best\"",
 	"--verbose",
 	"--force-ipv4",
 	"--sleep-interval 5",
@@ -29,7 +29,7 @@ var youtubeDLCommand = []string{
 
 func getYoutubeDLCommandForYTChannel(ytchan *collection.YTChannel, str string) string {
 	cdCommand := "cd " + fmt.Sprintf("/media/Drive/Videos/Youtube/%s", ytchan.Name) + "; "
-	return cdCommand + strings.Join(youtubeDLCommand, " ") + " " + str
+	return fmt.Sprintf("%s %s %s", cdCommand, strings.Join(youtubeDLCommand, " "), str)
 }
 
 func getYoutubeDLCommandForVideoList(chann *collection.YTChannel, list *[]youtubeapi.RSSVideoEntry) string {

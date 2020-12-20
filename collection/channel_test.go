@@ -1,12 +1,91 @@
 package collection
 
 import (
+	"hyperfocus.systems/youtube-curator-server/config"
 	"hyperfocus.systems/youtube-curator-server/youtubeapi"
 	"os"
 	"reflect"
 	"testing"
-	"time"
 )
+
+func TestGetAvailableYTChannels(t *testing.T) {
+	t.Run("GetAvailableYTChannels returns correct channels from a mock directory", func(t *testing.T) {
+		videoPath := "/video/path/"
+		cfg, err := config.GetConfig(&mockConfigProvider{
+			videoPath,
+			"FAKE_API_KEY",
+		})
+		if err != nil {
+			t.Error(err)
+		}
+
+		dirOutput := &[]os.FileInfo{
+			mockFileInfo{
+				name:  "65scribe",
+				size:  0,
+				isDir: true,
+			},
+			mockFileInfo{
+				name:  "AudioPilz",
+				size:  0,
+				isDir: true,
+			},
+			mockFileInfo{
+				name:  "somerandomvideo.mp4",
+				size:  12312312312321,
+				isDir: false,
+			},
+		}
+
+		scribePath := videoPath + "65scribe" + "/config.json"
+		audiopath := videoPath + "AudioPilz" + "/config.json"
+
+		returnData := map[string][]byte{
+			scribePath: []byte(`{
+			  "Name": "65scribe",
+			  "RSSURL": "https://www.youtube.com/feeds/videos.xml?channel_id=UC8dJOqcjyiA9Zo9aOxxiCMw",
+			  "ChannelURL": "https://www.youtube.com/user/65scribe",
+			  "ArchivalMode": "archive"
+			}`),
+			audiopath: []byte(`{
+			  "Name": "AudioPilz",
+			  "RSSURL": "https://www.youtube.com/feeds/videos.xml?channel_id=UCOJVsjPZcE9HxsgPKCxZfAg",
+			  "ChannelURL": "https://www.youtube.com/channel/UCOJVsjPZcE9HxsgPKCxZfAg",
+			  "ArchivalMode": "archive"
+			}`),
+		}
+
+		expectedReturnData := map[string]YTChannel{
+			"65scribe": YTChannel{
+				Name:         "65scribe",
+				RSSURL:       "https://www.youtube.com/feeds/videos.xml?channel_id=UC8dJOqcjyiA9Zo9aOxxiCMw",
+				ChannelURL:   "https://www.youtube.com/user/65scribe",
+				ArchivalMode: "archive",
+			},
+			"AudioPilz": YTChannel{
+				Name:         "AudioPilz",
+				RSSURL:       "https://www.youtube.com/feeds/videos.xml?channel_id=UCOJVsjPZcE9HxsgPKCxZfAg",
+				ChannelURL:   "https://www.youtube.com/channel/UCOJVsjPZcE9HxsgPKCxZfAg",
+				ArchivalMode: "archive",
+			},
+		}
+
+		ytChannels, err := getAvailableYTChannels(cfg, &mockDirReaderProvider{
+			t:                          t,
+			returnReadDirValue:         dirOutput,
+			expectedDirname:            &videoPath,
+			returnReadFileValueForPath: returnData,
+		})
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		if !reflect.DeepEqual(*ytChannels, expectedReturnData) {
+			t.Errorf("getAvailableYTChannels did not return correct results. Expected\n%+v\ngot %+v", expectedReturnData, ytChannels)
+		}
+	})
+}
 
 func TestGetVideoIDFromFileName(t *testing.T) {
 	t.Run("Parses ID from standard video title", func(t *testing.T) {
@@ -206,59 +285,118 @@ func TestIsEntryInVideoList(t *testing.T) {
 	})
 }
 
-type MockFileInfo struct {
-	name  string
-	size  int64
-	isDir bool
-}
+func TestGetLocalVideosFromDisk(t *testing.T) {
+	t.Run("getLocalVideosFromDisk should load the correct results", func(t *testing.T) {
+		channelName := "TestChannel"
+		channel := &YTChannel{
+			channelName,
+			"https://example.com/rss.xml",
+			"https://example.com/channel/",
+			ArchivalModeArchive,
+		}
 
-func (f MockFileInfo) Name() string {
-	return f.name
-}
-func (f MockFileInfo) Size() int64 {
-	return f.size
-}
-func (f MockFileInfo) Mode() os.FileMode {
-	return 0
-}
-func (f MockFileInfo) ModTime() time.Time {
-	return time.Now()
-}
-func (f MockFileInfo) IsDir() bool {
-	return f.isDir
-}
-func (f MockFileInfo) Sys() interface{} {
-	return nil
+		videoDirPath := "/videos/"
+
+		expectedVideo := &[]Video{
+			Video{
+				videoDirPath + channelName + "/The Macintosh LC-dCqJ6iPHus0.mp4",
+				"dCqJ6iPHus0",
+				"mp4",
+				videoDirPath + channelName,
+			},
+		}
+
+		cfg, err := config.GetConfig(&mockConfigProvider{
+			videoDirPath: videoDirPath,
+		})
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		expectedDirname := videoDirPath + channelName
+		videos, err := getLocalVideosFromDisk(
+			channel,
+			&mockDirReaderProvider{
+				expectedDirname: &expectedDirname,
+				t:               t,
+				returnReadDirValue: &[]os.FileInfo{
+					mockFileInfo{
+						"The Macintosh LC-dCqJ6iPHus0.mp4",
+						84000000,
+						false,
+					},
+				},
+			},
+			cfg,
+		)
+
+		if !reflect.DeepEqual(*expectedVideo, *videos) {
+			t.Errorf("Video list does not match response from function: Expected\n%+v\n, got\n%+v", *expectedVideo, *videos)
+		}
+	})
+
+	t.Run("getLocalVideosFromDisk should return an error if the dir lookup fails", func(t *testing.T) {
+		channelName := "TestChannel"
+		channel := &YTChannel{
+			channelName,
+			"https://example.com/rss.xml",
+			"https://example.com/channel/",
+			ArchivalModeArchive,
+		}
+
+		cfg, err := config.GetConfig(&mockConfigProvider{
+			videoDirPath: "/videos/",
+		})
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		_, err = getLocalVideosFromDisk(
+			channel,
+			&mockDirReaderProvider{
+				t:                  t,
+				shouldErrorReadDir: true,
+			},
+			cfg,
+		)
+
+		if err == nil {
+			t.Error("getLocalVideosFromDisk should have thrown error")
+		}
+
+	})
 }
 
 func TestGetLocalVideosFromDirList(t *testing.T) {
 	dirlist := []os.FileInfo{
-		MockFileInfo{
+		mockFileInfo{
 			"The Macintosh LC-dCqJ6iPHus0.mp4",
 			84000000,
 			false,
 		},
-		MockFileInfo{
+		mockFileInfo{
 			"Bad File.description",
 			31000000,
 			false,
 		},
-		MockFileInfo{
+		mockFileInfo{
 			"The Macintosh Quadra 800--AC4HwzAK7A.mp4",
 			31000000,
 			false,
 		},
-		MockFileInfo{
+		mockFileInfo{
 			"Bad File.x",
 			31000000,
 			false,
 		},
-		MockFileInfo{
+		mockFileInfo{
 			"The Macintosh SE-_gPsIiKtybA.mp4",
 			32000000,
 			false,
 		},
-		MockFileInfo{
+		mockFileInfo{
 			"My Video-basAIdKsyIA.mkv",
 			33000000,
 			false,

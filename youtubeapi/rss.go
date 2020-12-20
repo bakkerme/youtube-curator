@@ -42,7 +42,8 @@ type RSS struct {
 	VideoEntry []RSSVideoEntry `xml:"entry"`
 }
 
-func getRSSFeed(url string, httpClient utils.YTCHTTPClient) (*RSS, error) {
+// GetRSSFeed will grab a Youtube RSS feed and parse it into an RSS struct
+func GetRSSFeed(url string, httpClient utils.YTCHTTPClient) (*RSS, error) {
 	resp, body, err := httpClient.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("Returned error %s for address %s", err, url)

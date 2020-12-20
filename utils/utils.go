@@ -67,6 +67,7 @@ func (osc *OSCommand) Run(name string, arg ...string) (*[]byte, error) {
 // DirReaderProvider provides the ability to read file directories on disk
 type DirReaderProvider interface {
 	ReadDir(dirname string) ([]os.FileInfo, error)
+	ReadFile(filepath string) ([]byte, error)
 }
 
 // DirReader implements DirReaderProvider to provide the ability to read file directories on disk
@@ -75,4 +76,9 @@ type DirReader struct{}
 // ReadDir reads the contents of a directory
 func (dr *DirReader) ReadDir(dirname string) ([]os.FileInfo, error) {
 	return ioutil.ReadDir(dirname)
+}
+
+// ReadFile reads the contents of a file
+func (dr *DirReader) ReadFile(path string) ([]byte, error) {
+	return ioutil.ReadFile(path)
 }

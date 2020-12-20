@@ -2,27 +2,39 @@ package main
 
 import (
 	"fmt"
-	"hyperfocus.systems/youtube-curator-server/channel"
+	"hyperfocus.systems/youtube-curator-server/collection"
+	"hyperfocus.systems/youtube-curator-server/config"
+	"hyperfocus.systems/youtube-curator-server/utils"
 	"hyperfocus.systems/youtube-curator-server/youtubeapi"
 	"hyperfocus.systems/youtube-curator-server/youtubedl"
 )
 
 type ytChannelEntryResult struct {
 	Channel *collection.YTChannel
-	Entries *[]youtubeapi.VideoEntry
+	Entries *[]youtubeapi.RSSVideoEntry
 	Error   error
 }
 
 func main() {
+	cfg, err := config.GetConfig(&config.EnvarConfigProvider{})
+	if err != nil {
+		panic(err)
+	}
+
+	ytChannels, err := collection.GetAvailableYTChannels(cfg)
+	if err != nil {
+		panic(err)
+	}
+
 	ch := make(chan ytChannelEntryResult)
-	for _, chann := range collection.Feeds {
+	for _, chann := range *ytChannels {
 		go func(channelToGet collection.YTChannel) {
-			videosToGet, err := getVideoUpdatesForYTChannel(&channelToGet)
+			videosToGet, err := getVideoUpdatesForYTChannel(&channelToGet, cfg)
 			ch <- ytChannelEntryResult{&channelToGet, videosToGet, err}
 		}(chann)
 	}
 
-	for range collection.Feeds {
+	for range *ytChannels {
 		result := <-ch
 		videosToGet := result.Entries
 		channelToGet := result.Channel
@@ -48,17 +60,17 @@ func main() {
 	}
 }
 
-func getVideoUpdatesForYTChannel(ytc *YTChannel) (*[]youtubeapi.VideoEntry, error) {
+func getVideoUpdatesForYTChannel(ytc *collection.YTChannel, cfg *config.Config) (*[]youtubeapi.RSSVideoEntry, error) {
 	rssFeed := ytc.RSSURL
-	rss, err := youtubeapi.getRSSFeed(rssFeed)
+	rss, err := youtubeapi.GetRSSFeed(rssFeed, &utils.HTTPClient{3000000})
 
 	if err != nil {
-		return nil, fmt.Errorf("Loading RSS feed xml failed for %s channel. URL is %s. Error: %s", ytc.Name, ytc.RSSURL, err)
+		return nil, fmt.Errorf("Loading RSS feed xml failed for %s collection. URL is %s. Error: %s", ytc.Name, ytc.RSSURL, err)
 	}
 
-	entries := rss.youtubeapi.VideoEntry
+	entries := rss.VideoEntry
 
-	videos, err := channel.GetLocalVideosByYTChannel(ytc)
+	videos, err := collection.GetLocalVideosByYTChannel(ytc, cfg)
 	if err != nil {
 		return nil, fmt.Errorf("Could not get videos off disk for ytc %s, error %s", ytc.Name, err)
 	}

@@ -1,8 +1,10 @@
 package collection
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"hyperfocus.systems/youtube-curator-server/config"
 	"hyperfocus.systems/youtube-curator-server/utils"
 	"hyperfocus.systems/youtube-curator-server/youtubeapi"
 	"os"
@@ -32,98 +34,43 @@ const ArchivalModeArchive = "archive"
 // ArchivalModeCurated specifies that only selected videos are to be archived
 const ArchivalModeCurated = "curated"
 
-// Feeds is a collection of YTChannel configs for videos on disk
-var Feeds = map[string]YTChannel{
-	"65scribe": YTChannel{
-		"65scribe",
-		"https://www.youtube.com/feeds/videos.xml?channel_id=UC8dJOqcjyiA9Zo9aOxxiCMw",
-		"https://www.youtube.com/user/65scribe",
-		ArchivalModeArchive,
-	},
-	"Ashens": YTChannel{
-		"Ashens",
-		"https://www.youtube.com/feeds/videos.xml?channel_id=UCxt9Pvye-9x_AIcb1UtmF1Q",
-		"https://www.youtube.com/user/ashens",
-		ArchivalModeArchive,
-	},
-	"AudioPilz": YTChannel{
-		"AudioPilz",
-		"https://www.youtube.com/feeds/videos.xml?channel_id=UCOJVsjPZcE9HxsgPKCxZfAg",
-		"https://www.youtube.com/channel/UCOJVsjPZcE9HxsgPKCxZfAg",
-		ArchivalModeArchive,
-	},
-	"BryanLunduke": YTChannel{
-		"BryanLunduke",
-		"https://www.youtube.com/feeds/videos.xml?channel_id=UCkK9UDm_ZNrq_rIXCz3xCGA",
-		"https://www.youtube.com/user/bryanlunduke",
-		ArchivalModeArchive,
-	},
-	"DanBell": YTChannel{
-		"DanBell",
-		"https://www.youtube.com/feeds/videos.xml?playlist_id=PLNz4Un92pGNxQ9vNgmnCx7dwchPJGJ3IQ",
-		"https://www.youtube.com/user/moviedan",
-		ArchivalModeArchive,
-	},
-	"LGR": YTChannel{
-		"LGR",
-		"https://www.youtube.com/feeds/videos.xml?channel_id=UCLx053rWZxCiYWsBETgdKrQ",
-		"https://www.youtube.com/channel/UCLx053rWZxCiYWsBETgdKrQ",
-		ArchivalModeCurated,
-	},
-	"LinusTechTips": YTChannel{
-		"LinusTechTips",
-		"https://www.youtube.com/feeds/videos.xml?channel_id=UCXuqSBlHAE6Xw-yeJA0Tunw",
-		"https://www.youtube.com/user/LinusTechTips",
-		ArchivalModeCurated,
-	},
-	"LukeSmith": YTChannel{
-		"LukeSmith",
-		"https://www.youtube.com/feeds/videos.xml?channel_id=UC2eYFnH61tmytImy1mTYvhA",
-		"https://www.youtube.com/channel/UC2eYFnH61tmytImy1mTYvhA",
-		ArchivalModeArchive,
-	},
-	"Mario64BetaArchive": YTChannel{
-		"Mario64BetaArchive",
-		"https://www.youtube.com/feeds/videos.xml?channel_id=UCSar92RCPocysNbvBG84Mxw",
-		"https://www.youtube.com/channel/UCSar92RCPocysNbvBG84Mxw",
-		ArchivalModeArchive,
-	},
-	"Memospore": YTChannel{
-		"Memospore",
-		"https://www.youtube.com/feeds/videos.xml?channel_id=UChbm-JCx_jii5xn-2f5nwIA",
-		"https://www.youtube.com/user/memospore",
-		ArchivalModeCurated,
-	},
-	"MichaelMJD": YTChannel{
-		"MichaelMJD",
-		"https://www.youtube.com/feeds/videos.xml?channel_id=UCS-WzPVpAAli-1IfEG2lN8A",
-		"https://www.youtube.com/user/mjd7999",
-		ArchivalModeArchive,
-	},
-	"NickRobinson": YTChannel{
-		"NickRobinson",
-		"https://www.youtube.com/feeds/videos.xml?playlist_id=PLGFiGO64XRngcnRd9KrQBUPpYWIWpPkVN",
-		"https://www.youtube.com/playlist?list=PLGFiGO64XRngcnRd9KrQBUPpYWIWpPkVN",
-		ArchivalModeArchive,
-	},
-	"RedLetterMedia": YTChannel{
-		"RedLetterMedia",
-		"https://www.youtube.com/feeds/videos.xml?channel_id=UCrTNhL_yO3tPTdQ5XgmmWjA",
-		"https://www.youtube.com/user/RedLetterMedia",
-		ArchivalModeCurated,
-	},
-	"SurviveTheJive": YTChannel{
-		"SurviveTheJive",
-		"https://www.youtube.com/feeds/videos.xml?channel_id=UCZAENaOaceQUMd84GDc26EA",
-		"https://www.youtube.com/user/ThomasRowsell",
-		ArchivalModeArchive,
-	},
-	"TechnologyConnections": YTChannel{
-		"TechnologyConnections",
-		"https://www.youtube.com/feeds/videos.xml?channel_id=UCy0tKL1T7wFoYcxCe0xjN6Q",
-		"https://www.youtube.com/channel/UCy0tKL1T7wFoYcxCe0xjN6Q",
-		ArchivalModeArchive,
-	},
+// GetAvailableYTChannels returns all configured Youtube Channels on disk in the configured video directory
+func GetAvailableYTChannels(cf *config.Config) (*map[string]YTChannel, error) {
+	return getAvailableYTChannels(cf, &utils.DirReader{})
+}
+
+func getAvailableYTChannels(cf *config.Config, dr utils.DirReaderProvider) (*map[string]YTChannel, error) {
+	ytChannels := map[string]YTChannel{}
+
+	dirEntries, err := dr.ReadDir(cf.VideoDirPath)
+	if err != nil {
+		return nil, err
+	}
+	for _, dirEntry := range dirEntries {
+		if dirEntry.IsDir() {
+			ytChannelConfig, err := getYTChannelConfigForDirPath(cf.VideoDirPath+dirEntry.Name()+"/config.json", dr)
+			if err != nil {
+				return nil, err
+			}
+			ytChannels[ytChannelConfig.Name] = *ytChannelConfig
+		}
+	}
+
+	return &ytChannels, nil
+}
+
+func getYTChannelConfigForDirPath(path string, dr utils.DirReaderProvider) (*YTChannel, error) {
+	file, err := dr.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("Can't get YT Channel config file. Looking for %s, got error %s", path, err)
+	}
+
+	var resp YTChannel
+	if err := json.Unmarshal([]byte(file), &resp); err != nil {
+		return nil, fmt.Errorf("Can't unmarshal YT Channel config file. Looking for %s, got error %s", path, err)
+	}
+
+	return &resp, nil
 }
 
 // GetEntriesNotInVideoList is given a list of Entries from the RSS feed and Videos on disk, return
@@ -175,12 +122,12 @@ func isEntryInVideoList(entry *youtubeapi.RSSVideoEntry, videos *[]Video) bool {
 }
 
 // GetLocalVideosByYTChannel is given a YTChannel, return the Videos on disk that are under that YTChannel
-func GetLocalVideosByYTChannel(channel *YTChannel) (*[]Video, error) {
-	return getLocalVideosFromDisk(channel, &utils.DirReader{})
+func GetLocalVideosByYTChannel(channel *YTChannel, cf *config.Config) (*[]Video, error) {
+	return getLocalVideosFromDisk(channel, &utils.DirReader{}, cf)
 }
 
-func getLocalVideosFromDisk(channel *YTChannel, dr utils.DirReaderProvider) (*[]Video, error) {
-	path := "/media/Drive/Videos/Youtube/" + channel.Name
+func getLocalVideosFromDisk(channel *YTChannel, dr utils.DirReaderProvider, cf *config.Config) (*[]Video, error) {
+	path := cf.VideoDirPath + channel.Name
 	dirlist, err := dr.ReadDir(path)
 	if err != nil {
 		return nil, err
