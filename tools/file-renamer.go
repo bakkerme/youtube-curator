@@ -25,8 +25,14 @@ func startFileRenamer() {
 		panic(err)
 	}
 
-	ytc := collection.Feeds["TechnologyConnections"]
-	videos, err := collection.GetLocalVideosByYTChannel(&ytc, cfg)
+	ytChannelLoader := collection.YTChannelLoad{}
+	ytChannels, err := ytChannelLoader.GetAvailableYTChannels(cfg)
+	if err != nil {
+		panic(err)
+	}
+
+	ytc := (*ytChannels)["TechnologyConnections"]
+	videos, err := ytc.GetLocalVideos(cfg)
 	if err != nil {
 		panic(err)
 	}

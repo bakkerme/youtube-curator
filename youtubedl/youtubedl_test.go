@@ -3,6 +3,7 @@ package youtubedl
 import (
 	"fmt"
 	"hyperfocus.systems/youtube-curator-server/collection"
+	"hyperfocus.systems/youtube-curator-server/config"
 	"hyperfocus.systems/youtube-curator-server/youtubeapi"
 	"strings"
 	"testing"
@@ -13,72 +14,76 @@ var video2 = "https://www.youtube.com/watch?v=OGK8gnP4TfA"
 var video3 = "https://www.youtube.com/watch?v=FazJqPQ6xSs"
 var videoEntries = []youtubeapi.RSSVideoEntry{
 	youtubeapi.RSSVideoEntry{
-		"yt:video:KQA9Na4aOa1",
-		"Test Video New",
-		youtubeapi.RSSLink{
-			video1,
+		ID:    "yt:video:KQA9Na4aOa1",
+		Title: "Test Video New",
+		Link: youtubeapi.RSSLink{
+			Href: video1,
 		},
-		"2020-11-06T19:00:01+00:00",
-		"2020-11-06T23:12:15+00:00",
-		youtubeapi.RSSMediaGroup{
-			"Test Video 1",
-			youtubeapi.RSSThumbnail{
-				"https://i2.ytimg.com/vi/KQA9Na4aOa1/hqdefault.jpg",
-				480,
-				360,
+		Published: "2020-11-06T19:00:01+00:00",
+		Updated:   "2020-11-06T23:12:15+00:00",
+		MediaGroup: youtubeapi.RSSMediaGroup{
+			Title: "Test Video 1",
+			Thumbnail: youtubeapi.RSSThumbnail{
+				URL:    "https://i2.ytimg.com/vi/KQA9Na4aOa1/hqdefault.jpg",
+				Width:  480,
+				Height: 360,
 			},
-			"Test Description New",
+			Description: "Test Description New",
 		},
 	},
 	youtubeapi.RSSVideoEntry{
-		"yt:video:OGK8gnP4TfA",
-		"Test Video 1",
-		youtubeapi.RSSLink{
-			video2,
+		ID:    "yt:video:OGK8gnP4TfA",
+		Title: "Test Video 1",
+		Link: youtubeapi.RSSLink{
+			Href: video2,
 		},
-		"2020-11-06T19:00:01+00:00",
-		"2020-11-06T23:12:15+00:00",
-		youtubeapi.RSSMediaGroup{
-			"Test Video 1",
-			youtubeapi.RSSThumbnail{
-				"https://i2.ytimg.com/vi/OGK8gnP4TfA/hqdefault.jpg",
-				480,
-				360,
+		Published: "2020-11-06T19:00:01+00:00",
+		Updated:   "2020-11-06T23:12:15+00:00",
+		MediaGroup: youtubeapi.RSSMediaGroup{
+			Title: "Test Video 1",
+			Thumbnail: youtubeapi.RSSThumbnail{
+				URL:    "https://i2.ytimg.com/vi/OGK8gnP4TfA/hqdefault.jpg",
+				Width:  480,
+				Height: 360,
 			},
-			"Test Description",
+			Description: "Test Description",
 		},
 	},
 	youtubeapi.RSSVideoEntry{
-		"yt:video:FazJqPQ6xSs",
-		"Test Video 2",
-		youtubeapi.RSSLink{
-			video3,
+		ID:    "yt:video:FazJqPQ6xSs",
+		Title: "Test Video 2",
+		Link: youtubeapi.RSSLink{
+			Href: video3,
 		},
-		"2020-11-06T19:00:01+00:00",
-		"2020-11-06T23:12:15+00:00",
-		youtubeapi.RSSMediaGroup{
-			"Test Video 2",
-			youtubeapi.RSSThumbnail{
-				"https://i2.ytimg.com/vi/FazJqPQ6xSs/hqdefault.jpg",
-				480,
-				360,
+		Published: "2020-11-06T19:00:01+00:00",
+		Updated:   "2020-11-06T23:12:15+00:00",
+		MediaGroup: youtubeapi.RSSMediaGroup{
+			Title: "Test Video 2",
+			Thumbnail: youtubeapi.RSSThumbnail{
+				URL:    "https://i2.ytimg.com/vi/FazJqPQ6xSs/hqdefault.jpg",
+				Width:  480,
+				Height: 360,
 			},
-			"Test Description 2",
+			Description: "Test Description 2",
 		},
 	},
 }
 
+var mockConfig = &config.Config{
+	VideoDirPath: "/base/path/",
+}
+
 func TestGetYoutubeDLCommandForVideoList(t *testing.T) {
 	t.Run("returns correct comamnd from video list", func(t *testing.T) {
-		channel := collection.YTChannel{
-			"TestChannel",
-			"http://example.com/rss.xml",
-			"http://example.com/channel",
-			collection.ArchivalModeCurated,
+		channel := collection.YTChannelData{
+			IName:         "TestChannel",
+			IRSSURL:       "http://example.com/rss.xml",
+			IChannelURL:   "http://example.com/channel",
+			IArchivalMode: collection.ArchivalModeCurated,
 		}
 
 		toFind := fmt.Sprintf("\"%s\" \"%s\" \"%s\"", video1, video2, video3)
-		command := getYoutubeDLCommandForVideoList(&channel, &videoEntries)
+		command := getYoutubeDLCommandForVideoList(&channel, &videoEntries, "/base/path")
 
 		if !strings.Contains(command, toFind) {
 			t.Errorf("getYoutubeDLCommandForVideoList resulted in incorrect command. Expected to find videos \n %s in command \n %s", toFind, command)
@@ -87,16 +92,17 @@ func TestGetYoutubeDLCommandForVideoList(t *testing.T) {
 }
 
 func TestCommandForArchivalType(t *testing.T) {
+
 	t.Run("outputs channel URL for archival mode", func(t *testing.T) {
 		channelURL := "http://example.com/channel"
-		ytchannel := collection.YTChannel{
-			"TestChannel",
-			"http://example.com/rss.xml",
-			channelURL,
-			collection.ArchivalModeArchive,
+		ytchannel := collection.YTChannelData{
+			IName:         "TestChannel",
+			IRSSURL:       "http://example.com/rss.xml",
+			IChannelURL:   channelURL,
+			IArchivalMode: collection.ArchivalModeArchive,
 		}
 
-		result, err := GetCommandForArchivalType(&ytchannel, &videoEntries)
+		result, err := GetCommandForArchivalType(&ytchannel, &videoEntries, mockConfig)
 		if err != nil {
 			t.Error(err)
 		}
@@ -108,14 +114,14 @@ func TestCommandForArchivalType(t *testing.T) {
 
 	t.Run("outputs video URLs for curated mode", func(t *testing.T) {
 		channelURL := "http://example.com/channel"
-		ytchannel := collection.YTChannel{
-			"TestChannel",
-			"http://example.com/rss.xml",
-			channelURL,
-			collection.ArchivalModeCurated,
+		ytchannel := collection.YTChannelData{
+			IName:         "TestChannel",
+			IRSSURL:       "http://example.com/rss.xml",
+			IChannelURL:   channelURL,
+			IArchivalMode: collection.ArchivalModeCurated,
 		}
 
-		result, err := GetCommandForArchivalType(&ytchannel, &videoEntries)
+		result, err := GetCommandForArchivalType(&ytchannel, &videoEntries, mockConfig)
 		if err != nil {
 			t.Error(err)
 		}

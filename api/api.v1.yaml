@@ -1,0 +1,322 @@
+openapi: 3.0.0
+info:
+  title: api
+  version: '1.0'
+  contact: {}
+  description: YT Curator API
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /videos:
+    get:
+      summary: Get Video Data
+      tags: []
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                description: ''
+                type: object
+                properties:
+                  videos:
+                    type: array
+                    uniqueItems: true
+                    minItems: 0
+                    items:
+                      $ref: '#/components/schemas/Video'
+                required:
+                  - videos
+              examples: {}
+        '400':
+          $ref: '#/components/responses/error'
+        '404':
+          $ref: '#/components/responses/error'
+      operationId: get-videos
+      description: Get some videos
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: channelID
+    put:
+      summary: Download Video
+      operationId: download-videos
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobID:
+                    type: number
+                    description: Represents a job in progress for the video download. See the /jobs/ path.
+                required:
+                  - jobID
+        '400':
+          $ref: '#/components/responses/error'
+        '404':
+          $ref: '#/components/responses/error'
+      description: Download one or more videos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: ''
+              type: object
+              properties:
+                videoID:
+                  type: array
+                  items:
+                    type: string
+                playlistID:
+                  type: array
+                  items:
+                    type: string
+                channelID:
+                  type: array
+                  items:
+                    type: string
+        description: 'Provide a list of Video IDs, a Playlist ID or a Channel ID'
+    delete:
+      summary: Delete Video
+      operationId: delete-videos
+      tags: []
+      responses:
+        '200':
+          $ref: '#/components/responses/deleted'
+        '400':
+          $ref: '#/components/responses/error'
+        '404':
+          $ref: '#/components/responses/error'
+      description: Delete a video from disk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                videoID:
+                  type: string
+                  minLength: 1
+              required:
+                - videoID
+  '/videos/{videoID}':
+    parameters:
+      - schema:
+          type: string
+        name: videoID
+        in: path
+        required: true
+        description: An ID of a video to get
+    get:
+      summary: Get Video Data
+      tags: []
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Video'
+              examples: {}
+        '400':
+          $ref: '#/components/responses/error'
+        '404':
+          $ref: '#/components/responses/error'
+      description: Get a video's metadata
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: videoID
+          description: A video ID to get data from
+      operationId: get-video-by-ID
+    delete:
+      summary: ''
+      operationId: delete-video-by-ID
+      description: Delete a video from disk
+      tags: []
+      responses:
+        '200':
+          $ref: '#/components/responses/deleted'
+        '400':
+          $ref: '#/components/responses/error'
+        '404':
+          $ref: '#/components/responses/error'
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: videoID
+          description: A video ID
+  /jobs:
+    get:
+      summary: Your GET endpoint
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                description: ''
+                type: object
+                properties:
+                  jobs:
+                    type: array
+                    uniqueItems: true
+                    minItems: 1
+                    items:
+                      $ref: '#/components/schemas/Job'
+                required:
+                  - jobs
+              examples: {}
+        '400':
+          $ref: '#/components/responses/error'
+        '404':
+          $ref: '#/components/responses/error'
+      operationId: get-jobs
+      description: Get all currently running jobs
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - all
+              - running
+              - complete
+          in: query
+          name: status
+          description: Filter by job status
+  '/jobs/{jobID}':
+    parameters:
+      - schema:
+          type: string
+        name: jobID
+        in: path
+        required: true
+    get:
+      summary: Your GET endpoint
+      tags: []
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+              examples: {}
+        '400':
+          $ref: '#/components/responses/error'
+        '404':
+          $ref: '#/components/responses/error'
+      operationId: get-jobs-by-ID
+      description: Get a Job by ID
+  '/jobs/socket/{jobID}':
+    parameters:
+      - schema:
+          type: string
+        name: jobID
+        in: path
+        required: true
+    get:
+      summary: Get Job Websocket
+      tags: []
+      responses:
+        '101':
+          description: Switching Protocols
+      operationId: get-jobs-socket
+      description: Provides a WebSocket to return realtime information on Job status
+components:
+  securitySchemes: {}
+  responses:
+    error:
+      description: Error Response
+      content:
+        application/json:
+          schema:
+            description: ''
+            type: object
+            properties:
+              detail:
+                type: string
+                minLength: 1
+              code:
+                type: string
+                minLength: 1
+            required:
+              - detail
+              - code
+    deleted:
+      description: Deleted OK
+      content:
+        application/json:
+          schema:
+            properties:
+              id:
+                type: string
+  schemas:
+    Video:
+      description: Represents a video
+      type: object
+      properties:
+        path:
+          type: string
+          minLength: 1
+        id:
+          type: string
+          minLength: 1
+        fileType:
+          type: string
+          minLength: 1
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        creator:
+          type: string
+          minLength: 1
+        publishedAt:
+          type: string
+          minLength: 1
+        duration:
+          type: string
+          minLength: 1
+      required:
+        - path
+        - id
+        - fileType
+        - title
+        - description
+        - creator
+        - publishedAt
+        - duration
+      title: Video
+    Job:
+      description: Represents an ongoing job
+      type: object
+      title: Job
+      properties:
+        id:
+          type: number
+        type:
+          type: string
+          minLength: 1
+        finished:
+          type: boolean
+        running:
+          type: boolean
+      required:
+        - id
+        - type
+        - finished
+        - running

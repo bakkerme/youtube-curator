@@ -10,18 +10,19 @@ import (
 )
 
 type ytChannelEntryResult struct {
-	Channel *collection.YTChannel
+	Channel collection.YTChannel
 	Entries *[]youtubeapi.RSSVideoEntry
 	Error   error
 }
 
 func main() {
-	cfg, err := config.GetConfig(&config.EnvarConfigProvider{})
+	cfg, err := config.GetConfig(&config.FileConfigProvider{})
 	if err != nil {
 		panic(err)
 	}
 
-	ytChannels, err := collection.GetAvailableYTChannels(cfg)
+	ytLoader := collection.YTChannelLoad{}
+	ytChannels, err := ytLoader.GetAvailableYTChannels(cfg)
 	if err != nil {
 		panic(err)
 	}
@@ -29,8 +30,8 @@ func main() {
 	ch := make(chan ytChannelEntryResult)
 	for _, chann := range *ytChannels {
 		go func(channelToGet collection.YTChannel) {
-			videosToGet, err := getVideoUpdatesForYTChannel(&channelToGet, cfg)
-			ch <- ytChannelEntryResult{&channelToGet, videosToGet, err}
+			videosToGet, err := getVideoUpdatesForYTChannel(channelToGet, cfg)
+			ch <- ytChannelEntryResult{channelToGet, videosToGet, err}
 		}(chann)
 	}
 
@@ -44,11 +45,11 @@ func main() {
 			fmt.Println(err)
 		}
 
-		fmt.Println(channelToGet.Name)
+		fmt.Println(channelToGet.Name())
 		fmt.Printf("%d new videos available\n", len(*videosToGet))
 
 		if len(*videosToGet) > 0 {
-			command, err := youtubedl.GetCommandForArchivalType(channelToGet, videosToGet)
+			command, err := youtubedl.GetCommandForArchivalType(channelToGet, videosToGet, cfg)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -60,19 +61,19 @@ func main() {
 	}
 }
 
-func getVideoUpdatesForYTChannel(ytc *collection.YTChannel, cfg *config.Config) (*[]youtubeapi.RSSVideoEntry, error) {
-	rssFeed := ytc.RSSURL
-	rss, err := youtubeapi.GetRSSFeed(rssFeed, &utils.HTTPClient{3000000})
+func getVideoUpdatesForYTChannel(ytc collection.YTChannel, cfg *config.Config) (*[]youtubeapi.RSSVideoEntry, error) {
+	rssFeed := ytc.RSSURL()
+	rss, err := youtubeapi.GetRSSFeed(rssFeed, &utils.HTTPClient{ConnTimeout: 3000000})
 
 	if err != nil {
-		return nil, fmt.Errorf("Loading RSS feed xml failed for %s collection. URL is %s. Error: %s", ytc.Name, ytc.RSSURL, err)
+		return nil, fmt.Errorf("Loading RSS feed xml failed for %s collection. URL is %s. Error: %s", ytc.Name(), ytc.RSSURL(), err)
 	}
 
 	entries := rss.VideoEntry
 
-	videos, err := collection.GetLocalVideosByYTChannel(ytc, cfg)
+	videos, err := ytc.GetLocalVideos(cfg)
 	if err != nil {
-		return nil, fmt.Errorf("Could not get videos off disk for ytc %s, error %s", ytc.Name, err)
+		return nil, fmt.Errorf("Could not get videos off disk for ytc %s, error %s", ytc.Name(), err)
 	}
 
 	entriesToDownload := collection.GetEntriesNotInVideoList(&entries, videos)

@@ -99,8 +99,8 @@ func TestConvertRSSStringToRSS(t *testing.T) {
 }
 
 func TestGetRSSFeed(t *testing.T) {
-	t.Run("getRSSFeed pulls data over HTTP and converts it to RSS", func(t *testing.T) {
-		rss, err := getRSSFeed("testurl.homebase", &mockHTTPClient{statusCodeToReturn: 200, responseFile: "./testfiles/test.xml"})
+	t.Run("GetRSSFeed pulls data over HTTP and converts it to RSS", func(t *testing.T) {
+		rss, err := GetRSSFeed("testurl.homebase", &mockHTTPClient{statusCodeToReturn: 200, responseFile: "./testfiles/test.xml"})
 
 		if err != nil {
 			t.Error(err)
@@ -111,20 +111,20 @@ func TestGetRSSFeed(t *testing.T) {
 		}
 	})
 
-	t.Run("getRSSFeed returns an error if HTTP Client returns an error", func(t *testing.T) {
-		_, err := getRSSFeed("testurl.homebase", &mockHTTPClient{throwError: true})
+	t.Run("GetRSSFeed returns an error if HTTP Client returns an error", func(t *testing.T) {
+		_, err := GetRSSFeed("testurl.homebase", &mockHTTPClient{throwError: true})
 
 		if err == nil {
-			t.Errorf("Expected getRSSFeed would return an error")
+			t.Errorf("Expected GetRSSFeed would return an error")
 		}
 	})
 
-	t.Run("getRSSFeed returns an error if HTTP status code is not 200", func(t *testing.T) {
-		_, err := getRSSFeed("testurl.homebase", &mockHTTPClient{statusCodeToReturn: 400})
+	t.Run("GetRSSFeed returns an error if HTTP status code is not 200", func(t *testing.T) {
+		_, err := GetRSSFeed("testurl.homebase", &mockHTTPClient{statusCodeToReturn: 400})
 
 		fmt.Println(err)
 		if err == nil {
-			t.Errorf("Expected getRSSFeed would return an error")
+			t.Errorf("Expected GetRSSFeed would return an error")
 		}
 	})
 }

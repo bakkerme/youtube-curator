@@ -2,9 +2,8 @@ package collection
 
 import (
 	"errors"
-	"fmt"
+	"hyperfocus.systems/youtube-curator-server/config"
 	"os"
-	"testing"
 	"time"
 )
 
@@ -33,78 +32,49 @@ func (f mockFileInfo) Sys() interface{} {
 	return nil
 }
 
-type mockDirReaderProvider struct {
-	expectedDirname            *string
-	expectedFilename           *string
-	t                          *testing.T
-	shouldErrorReadDir         bool
-	shouldErrorReadFile        bool
-	returnReadDirValue         *[]os.FileInfo
-	returnReadFileValue        *[]byte
-	returnReadFileValueForPath map[string][]byte
+// mockYTChannel is a struct that represents the configuration for each channel archived
+type mockYTChannel struct {
+	IName         string
+	IRSSURL       string
+	IChannelURL   string
+	IArchivalMode string
+	ILocalVideos  *[]Video
 }
 
-func (mdr *mockDirReaderProvider) ReadDir(dirname string) ([]os.FileInfo, error) {
-	if mdr.shouldErrorReadDir {
-		return nil, errors.New("oh the humanity")
-	}
-
-	if mdr.expectedDirname != nil {
-		if mdr.t == nil {
-			panic("Please provide mockDirReaderProvider a T")
-		}
-
-		if dirname != *mdr.expectedDirname {
-			mdr.t.Errorf("dirname provided to ReadDir was not the expected value. Expected %s, got %s", *mdr.expectedDirname, dirname)
-		}
-	}
-
-	if mdr.returnReadDirValue != nil {
-		return *mdr.returnReadDirValue, nil
-	}
-
-	return nil, nil
+// GetLocalVideos is given a mockYTChannel, return the Videos on disk that are under that YTChannel
+func (ytc mockYTChannel) GetLocalVideos(cf *config.Config) (*[]Video, error) {
+	return ytc.ILocalVideos, nil
 }
 
-func (mdr *mockDirReaderProvider) ReadFile(path string) ([]byte, error) {
-	if mdr.shouldErrorReadFile {
-		return nil, errors.New("oh the humanity")
-	}
-
-	if mdr.expectedFilename != nil {
-		if mdr.t == nil {
-			panic("Please provide mockDirReaderProvider a T")
-		}
-
-		if path != *mdr.expectedFilename {
-			mdr.t.Errorf("path provided to ReadFile was not the expected value. Expected %s, got %s", *mdr.expectedFilename, path)
-		}
-	}
-
-	if mdr.returnReadFileValue != nil {
-		return *mdr.returnReadFileValue, nil
-	}
-
-	if mdr.returnReadFileValueForPath[path] != nil {
-		return mdr.returnReadFileValueForPath[path], nil
-	}
-
-	return nil, nil
+// Name returns the name
+func (ytc mockYTChannel) Name() string {
+	return ytc.IName
 }
 
-type mockConfigProvider struct {
-	videoDirPath  string
-	youtubeAPIKey string
+// RSSURL returns the RSS URL
+func (ytc mockYTChannel) RSSURL() string {
+	return ytc.IRSSURL
 }
 
-func (cp mockConfigProvider) GetValue(key string) (string, error) {
-	if key == "VIDEO_DIR_PATH" {
-		return cp.videoDirPath, nil
+// ChannelURL returns the Channel URL
+func (ytc mockYTChannel) ChannelURL() string {
+	return ytc.IChannelURL
+}
+
+// ArchivalMode returns the Archival Mode string
+func (ytc mockYTChannel) ArchivalMode() string {
+	return ytc.IArchivalMode
+}
+
+type mockYTChannelLoad struct {
+	returnValue *map[string]YTChannel
+	shouldError bool
+}
+
+func (ytcl mockYTChannelLoad) GetAvailableYTChannels(cf *config.Config) (*map[string]YTChannel, error) {
+	if ytcl.shouldError {
+		return nil, errors.New("Did the biggest error")
 	}
 
-	if key == "YOUTUBE_API_KEY" {
-		return cp.youtubeAPIKey, nil
-	}
-
-	return "", fmt.Errorf("mockConfigProvider could not find key %s", key)
+	return ytcl.returnValue, nil
 }

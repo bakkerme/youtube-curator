@@ -68,6 +68,7 @@ func (osc *OSCommand) Run(name string, arg ...string) (*[]byte, error) {
 type DirReaderProvider interface {
 	ReadDir(dirname string) ([]os.FileInfo, error)
 	ReadFile(filepath string) ([]byte, error)
+	GetHomeDirPath() string
 }
 
 // DirReader implements DirReaderProvider to provide the ability to read file directories on disk
@@ -81,4 +82,9 @@ func (dr *DirReader) ReadDir(dirname string) ([]os.FileInfo, error) {
 // ReadFile reads the contents of a file
 func (dr *DirReader) ReadFile(path string) ([]byte, error) {
 	return ioutil.ReadFile(path)
+}
+
+// GetHomeDirPath mocks the path to the user's home directory
+func (dr *DirReader) GetHomeDirPath() string {
+	return os.Getenv("HOME")
 }

@@ -1,46 +1,108 @@
 package config
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
+	"hyperfocus.systems/youtube-curator-server/utils"
 	"os"
 )
 
 // Config represents application-level configuration
 type Config struct {
-	YoutubeAPIKey string
-	VideoDirPath  string
+	YoutubeAPIKey string `json:"youtubeAPIKey"`
+	VideoDirPath  string `json:"videoDirPath"`
 }
 
 // configProvider is an interface for providers of the configuration
 type configProvider interface {
-	GetValue(string) (string, error)
+	LoadConfig() (*Config, error)
 }
 
 // GetConfig returns a Config struct containing application-level configuration
 func GetConfig(cp configProvider) (*Config, error) {
-	youtubeAPIKey, err := cp.GetValue("YOUTUBE_API_KEY")
+	cfg, err := cp.LoadConfig()
 	if err != nil {
 		return nil, err
 	}
-	dirPath, err := cp.GetValue("VIDEO_DIR_PATH")
+
+	err = checkFields(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("Config format is invalid.\n%s", err)
+	}
+
+	dirPath := cfg.VideoDirPath
+	if dirPath[len(dirPath)-1] != '/' {
+		cfg.VideoDirPath = dirPath + "/"
+	}
+
+	return cfg, nil
+}
+
+func checkFields(cfg *Config) error {
+	if len(cfg.YoutubeAPIKey) == 0 {
+		return errors.New("YoutubeAPIKey in config is invalid. It should be a 39 character long string. See readme for more info")
+	}
+
+	if len(cfg.VideoDirPath) == 0 {
+		return errors.New("VideoDirPath in config is invalid. This should be a path to a folder intended to store videos")
+	}
+
+	return nil
+}
+
+// EnvarConfigProvider provides configuration from the environment variables
+type EnvarConfigProvider struct{}
+
+// LoadConfig loads a config file from the set environment variables
+func (cp EnvarConfigProvider) LoadConfig() (*Config, error) {
+	youtubeAPIKey, err := cp.getValue("YOUTUBE_API_KEY")
+	if err != nil {
+		return nil, err
+	}
+
+	videoDirPath, err := cp.getValue("VIDEO_DIR_PATH")
 	if err != nil {
 		return nil, err
 	}
 
 	return &Config{
 		YoutubeAPIKey: youtubeAPIKey,
-		VideoDirPath:  dirPath,
+		VideoDirPath:  videoDirPath,
 	}, nil
 }
 
-// EnvarConfigProvider provides configuration from the environment variables
-type EnvarConfigProvider struct{}
-
-func (cp EnvarConfigProvider) GetValue(key string) (string, error) {
+// GetValue looks up a config value in the environment variables
+func (cp EnvarConfigProvider) getValue(key string) (string, error) {
 	result, didFind := os.LookupEnv(key)
-	if didFind {
-		return result, nil
+	if !didFind {
+		return "", fmt.Errorf("Could not find %s in Environment for Config", key)
 	}
 
-	return "", fmt.Errorf("Could not find %s in Environment for Config", key)
+	return result, nil
+}
+
+// FileConfigProvider provides configuration from the environment variables
+type FileConfigProvider struct {
+	config *Config
+}
+
+// LoadConfig will load a config file off disk
+func (cp FileConfigProvider) LoadConfig() (*Config, error) {
+	return cp.loadConfig(&utils.DirReader{})
+}
+
+func (cp FileConfigProvider) loadConfig(dr utils.DirReaderProvider) (*Config, error) {
+	path := dr.GetHomeDirPath() + "/.config/yt-up2date/config.json"
+	file, err := dr.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("Could not find Config file, please see readme and add valid config.json to %s. Error %s", path, err)
+	}
+
+	var cfg Config
+	if err := json.Unmarshal([]byte(file), &cfg); err != nil {
+		return nil, fmt.Errorf("Can't unmarshal config file. Loading up %s, got error %s", path, err)
+	}
+
+	return &cfg, nil
 }

@@ -3,6 +3,7 @@ package youtubedl
 import (
 	"fmt"
 	"hyperfocus.systems/youtube-curator-server/collection"
+	"hyperfocus.systems/youtube-curator-server/config"
 	"hyperfocus.systems/youtube-curator-server/youtubeapi"
 	"strings"
 )
@@ -27,12 +28,12 @@ var youtubeDLCommand = []string{
 	"--merge-output-format \"mkv\"",
 }
 
-func getYoutubeDLCommandForYTChannel(ytchan *collection.YTChannel, str string) string {
-	cdCommand := "cd " + fmt.Sprintf("/media/Drive/Videos/Youtube/%s", ytchan.Name) + "; "
+func getYoutubeDLCommandForYTChannel(ytchan collection.YTChannel, str string, baseDir string) string {
+	cdCommand := fmt.Sprintf("cd %s%s;", baseDir, ytchan.Name())
 	return fmt.Sprintf("%s %s %s", cdCommand, strings.Join(youtubeDLCommand, " "), str)
 }
 
-func getYoutubeDLCommandForVideoList(chann *collection.YTChannel, list *[]youtubeapi.RSSVideoEntry) string {
+func getYoutubeDLCommandForVideoList(ytchan collection.YTChannel, list *[]youtubeapi.RSSVideoEntry, baseDir string) string {
 	var youtubeDlList []string
 	for _, entry := range *list {
 		youtubeDlList = append(youtubeDlList, "\""+entry.Link.Href+"\"")
@@ -40,16 +41,16 @@ func getYoutubeDLCommandForVideoList(chann *collection.YTChannel, list *[]youtub
 
 	downloadString := strings.Join(youtubeDlList, " ")
 
-	return getYoutubeDLCommandForYTChannel(chann, downloadString)
+	return getYoutubeDLCommandForYTChannel(ytchan, downloadString, baseDir)
 }
 
 // GetCommandForArchivalType provides a YoutubeDL command for a YTChannel to download a number of VideoEntrys
-func GetCommandForArchivalType(ytchan *collection.YTChannel, videos *[]youtubeapi.RSSVideoEntry) (string, error) {
-	if ytchan.ArchivalMode == collection.ArchivalModeCurated {
-		return getYoutubeDLCommandForVideoList(ytchan, videos), nil
-	} else if ytchan.ArchivalMode == collection.ArchivalModeArchive {
-		return getYoutubeDLCommandForYTChannel(ytchan, ytchan.ChannelURL), nil
+func GetCommandForArchivalType(ytchan collection.YTChannel, videos *[]youtubeapi.RSSVideoEntry, cf *config.Config) (string, error) {
+	if ytchan.ArchivalMode() == collection.ArchivalModeCurated {
+		return getYoutubeDLCommandForVideoList(ytchan, videos, cf.VideoDirPath), nil
+	} else if ytchan.ArchivalMode() == collection.ArchivalModeArchive {
+		return getYoutubeDLCommandForYTChannel(ytchan, ytchan.ChannelURL(), cf.VideoDirPath), nil
 	}
 
-	return "", fmt.Errorf("Archival Type for provided channel is invalid. Got %s from channel %s", ytchan.ArchivalMode, ytchan)
+	return "", fmt.Errorf("Archival Type for provided channel is invalid. Got %s from channel %s", ytchan.ArchivalMode(), ytchan)
 }
