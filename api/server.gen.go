@@ -168,9 +168,9 @@ func (w *ServerInterfaceWrapper) GetVideoByID(ctx echo.Context) error {
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetVideoByIDParams
-	// ------------- Optional query parameter "videoID" -------------
+	// ------------- Required query parameter "videoID" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "videoID", ctx.QueryParams(), &params.VideoID)
+	err = runtime.BindQueryParameter("form", true, true, "videoID", ctx.QueryParams(), &params.VideoID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter videoID: %s", err))
 	}

@@ -69,7 +69,7 @@ type DeleteVideoByIDParams struct {
 type GetVideoByIDParams struct {
 
 	// A video ID to get data from
-	VideoID *string `json:"videoID,omitempty"`
+	VideoID string `json:"videoID"`
 }
 
 // DeleteVideosRequestBody defines body for DeleteVideos for application/json ContentType.

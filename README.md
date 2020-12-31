@@ -3,13 +3,19 @@
 ## Dependencies
 * youtube-dl
 * ffmpeg
-* oapi-codegen
 
 ## Setup
 
-Setup .envrc.local with a YOUTUBE_API_KEY and VIDEO_DIR_PATH.
+Setup .envrc.local with a YOUTUBE_API_KEY and VIDEO_DIR_PATH, or add a config file at ~/.config/yt-up2date/config.json:
 
-Create folders in the VIDEO_DIR_PATH for each Youtube Channel. Add a config.json with something like the following:
+```
+{
+  "YoutubeAPIKey": "YOUTUBE_API_KEY goes here, see API dashboard",
+  "VideoDirPath": "/your/video/storage/path"
+}
+```
+
+Create folders in the Vide Dir Path for each Youtube Channel. Add a config.json with something like the following:
 
 ```
 {
@@ -20,8 +26,14 @@ Create folders in the VIDEO_DIR_PATH for each Youtube Channel. Add a config.json
 }
 ```
 
-ArchivalMode can be curated or archive.
+ArchivalMode can be "curated" or "archive".
+
+Run:
+`go generate`
 
 ## TODO
-* Refactor out RSS feed tech and replace it with more Youtube API stuff
+* Initial implementation of API Video lookup functions
+* Reimplement Up2Date functionality with Youtube API
+* Job function WIP
 * Unite all the disparate Video representations
+* Refactor disk lookups for more speed

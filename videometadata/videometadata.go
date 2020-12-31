@@ -4,14 +4,10 @@ import (
 	"time"
 )
 
-// Provider is an interface for providing metadata from a video file
+// Provider provides an interface for getting and setting Video metadata
 type Provider interface {
-	LoadVideoFile(path string)
-	Title() string
-	Description() string
-	Creator() string
-	PublishedAt() *time.Time
-	Duration() *time.Duration
+	Get(path string, pr CommandProvider) (*Response, error)
+	Set(path string, metadata *Metadata, pr CommandProvider) error
 }
 
 // CommandProvider is an interface for different providers of metadata. This
@@ -65,9 +61,12 @@ func (pErr *ParseError) UnparsedFields() []string {
 	return pErr.unparsedFields
 }
 
-// GetVideoMetadata loads up a video file and returns metadata about the video,
+// VideoMetadata provides the ability to Get and Set VideoMetadata
+type VideoMetadata struct{}
+
+// Get loads up a video file and returns metadata about the video,
 // given the correct VideoMetadataCommandProvider for the type of video
-func GetVideoMetadata(path string, pr CommandProvider) (*Response, error) {
+func (l VideoMetadata) Get(path string, pr CommandProvider) (*Response, error) {
 	out, err := pr.Run(path)
 	if err != nil {
 		return nil, err
@@ -76,8 +75,8 @@ func GetVideoMetadata(path string, pr CommandProvider) (*Response, error) {
 	return buildVideoMetadataResponse(out, path, pr), nil
 }
 
-// SetVideoMetadata will set metadata on a video file given the correct
+// Set will set metadata on a video file given the correct
 // VideoMetadataCommandProvider for the type of video file
-func SetVideoMetadata(path string, metadata *Metadata, pr CommandProvider) error {
+func (l VideoMetadata) Set(path string, metadata *Metadata, pr CommandProvider) error {
 	return pr.Set(path, metadata)
 }

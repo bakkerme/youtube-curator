@@ -3,6 +3,7 @@ package collection
 import (
 	"hyperfocus.systems/youtube-curator-server/config"
 	"hyperfocus.systems/youtube-curator-server/utils"
+	"hyperfocus.systems/youtube-curator-server/videometadata"
 )
 
 // ArchivalModeArchive specifies that all videos are to be archived
@@ -26,6 +27,13 @@ type Video struct {
 	ID       string
 	FileType string
 	BasePath string
+}
+
+// VideoWithMetadata represents a video on the filesystem,
+// along with the metadata from that video
+type VideoWithMetadata struct {
+	videometadata.Metadata
+	Video
 }
 
 // YTChannelData is a struct that represents the configuration for each channel archived

@@ -1,4 +1,4 @@
-package tageditor
+package mp4metadata
 
 import (
 	"errors"

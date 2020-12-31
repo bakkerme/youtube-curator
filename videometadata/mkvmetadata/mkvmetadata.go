@@ -1,4 +1,4 @@
-package mkvinfo
+package mkvmetadata
 
 import (
 	"errors"

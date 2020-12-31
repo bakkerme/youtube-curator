@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/labstack/echo/v4"
+	"hyperfocus.systems/youtube-curator-server/collection"
+	"hyperfocus.systems/youtube-curator-server/config"
+	// "hyperfocus.systems/youtube-curator-server/videometadata"
 	"net/http"
 )
 
@@ -67,6 +70,16 @@ func (yt *YTAPI) DeleteVideoByID(ctx echo.Context, videoID string, params Delete
 
 // GetVideoByID returns video data for a video ID
 func (yt *YTAPI) GetVideoByID(ctx echo.Context, videoID string, params GetVideoByIDParams) error {
+	cfg, err := config.GetConfig(&config.FileConfigProvider{})
+	if err != nil {
+		return err
+	}
+
+	_, err = collection.GetVideoByID(params.VideoID, cfg)
+	if err != nil {
+		return err
+	}
+
 	return fmt.Errorf("unimplemented")
 }
 
