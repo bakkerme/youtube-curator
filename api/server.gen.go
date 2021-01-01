@@ -14,6 +14,15 @@ import (
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// Your GET endpoint
+	// (GET /channels/)
+	GetChannels(ctx echo.Context) error
+	// Your GET endpoint
+	// (GET /channels/{channelID})
+	GetChannelByID(ctx echo.Context, channelID string) error
+	// Your GET endpoint
+	// (GET /channels/{channelID}/update)
+	CheckChannelUpdates(ctx echo.Context, channelID string) error
+	// Your GET endpoint
 	// (GET /jobs)
 	GetJobs(ctx echo.Context, params GetJobsParams) error
 	// Get Job Websocket
@@ -42,6 +51,47 @@ type ServerInterface interface {
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
+}
+
+// GetChannels converts echo context to params.
+func (w *ServerInterfaceWrapper) GetChannels(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetChannels(ctx)
+	return err
+}
+
+// GetChannelByID converts echo context to params.
+func (w *ServerInterfaceWrapper) GetChannelByID(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "channelID" -------------
+	var channelID string
+
+	err = runtime.BindStyledParameter("simple", false, "channelID", ctx.Param("channelID"), &channelID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter channelID: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.GetChannelByID(ctx, channelID)
+	return err
+}
+
+// CheckChannelUpdates converts echo context to params.
+func (w *ServerInterfaceWrapper) CheckChannelUpdates(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "channelID" -------------
+	var channelID string
+
+	err = runtime.BindStyledParameter("simple", false, "channelID", ctx.Param("channelID"), &channelID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter channelID: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.CheckChannelUpdates(ctx, channelID)
+	return err
 }
 
 // GetJobs converts echo context to params.
@@ -208,6 +258,9 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
+	router.GET(baseURL+"/channels/", wrapper.GetChannels)
+	router.GET(baseURL+"/channels/:channelID", wrapper.GetChannelByID)
+	router.GET(baseURL+"/channels/:channelID/update", wrapper.CheckChannelUpdates)
 	router.GET(baseURL+"/jobs", wrapper.GetJobs)
 	router.GET(baseURL+"/jobs/socket/:jobID", wrapper.GetJobsSocket)
 	router.GET(baseURL+"/jobs/:jobID", wrapper.GetJobsByID)

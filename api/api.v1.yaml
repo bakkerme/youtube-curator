@@ -235,6 +235,73 @@ paths:
           description: Switching Protocols
       operationId: get-jobs-socket
       description: Provides a WebSocket to return realtime information on Job status
+  /channels/:
+    get:
+      summary: Your GET endpoint
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Channel'
+        '400':
+          $ref: '#/components/responses/error'
+        '404':
+          $ref: '#/components/responses/error'
+      operationId: get-channels
+      description: Get all available channels
+  '/channels/{channelID}':
+    parameters:
+      - schema:
+          type: string
+        name: channelID
+        in: path
+        required: true
+    get:
+      summary: Your GET endpoint
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Channel'
+        '400':
+          $ref: '#/components/responses/error'
+        '404':
+          $ref: '#/components/responses/error'
+      operationId: get-channel-by-ID
+      description: Get channel By ID
+  '/channels/{channelID}/update':
+    parameters:
+      - schema:
+          type: string
+        name: channelID
+        in: path
+        required: true
+    get:
+      summary: Your GET endpoint
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Video'
+        '400':
+          $ref: '#/components/responses/error'
+        '404':
+          $ref: '#/components/responses/error'
+      operationId: check-channel-updates
+      description: Connect to Youtube and look for new videos for the provided Channel
 components:
   securitySchemes: {}
   responses:
@@ -321,3 +388,27 @@ components:
         - type
         - finished
         - running
+    Channel:
+      description: 'Channel represents a single Youtube Channel, as stored on disk'
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        rssURL:
+          type: string
+          minLength: 1
+        channelURL:
+          type: string
+          minLength: 1
+        archivalMode:
+          type: string
+          minLength: 1
+          enum:
+            - archive
+            - curated
+      required:
+        - name
+        - rssURL
+        - channelURL
+        - archivalMode

@@ -127,9 +127,9 @@ func TestGetVideoByID(t *testing.T) {
 			},
 		}
 
-		ytcl := &mockYTChannelLoad{
-			returnValue: &map[string]YTChannel{
-				"Channel1": mockYTChannel{
+		ytcl := &MockYTChannelLoad{
+			ReturnValue: &map[string]YTChannel{
+				"Channel1": MockYTChannel{
 					channel1,
 					"123abc.com",
 					"123abc.com",
@@ -137,7 +137,7 @@ func TestGetVideoByID(t *testing.T) {
 					&channel1Videos,
 					false,
 				},
-				"Channel2": mockYTChannel{
+				"Channel2": MockYTChannel{
 					channel1,
 					"123abc.com",
 					"123abc.com",
@@ -187,9 +187,9 @@ func TestGetVideoByID(t *testing.T) {
 			},
 		}
 
-		ytcl := &mockYTChannelLoad{
-			returnValue: &map[string]YTChannel{
-				"Channel1": mockYTChannel{
+		ytcl := &MockYTChannelLoad{
+			ReturnValue: &map[string]YTChannel{
+				"Channel1": MockYTChannel{
 					channel1,
 					"123abc.com",
 					"123abc.com",
@@ -197,7 +197,7 @@ func TestGetVideoByID(t *testing.T) {
 					&channel1Videos,
 					false,
 				},
-				"Channel2": mockYTChannel{
+				"Channel2": MockYTChannel{
 					channel1,
 					"123abc.com",
 					"123abc.com",
@@ -224,8 +224,8 @@ func TestGetVideoByID(t *testing.T) {
 			VideoDirPath: "/a/path",
 		}
 
-		ytcl := &mockYTChannelLoad{
-			shouldError: true,
+		ytcl := &MockYTChannelLoad{
+			ShouldError: true,
 		}
 
 		_, err := getVideoByID("someID", cf, ytcl)
@@ -255,9 +255,9 @@ func TestGetAllLocalVideos(t *testing.T) {
 			},
 		}
 
-		ytcl := &mockYTChannelLoad{
-			returnValue: &map[string]YTChannel{
-				"Channel1": mockYTChannel{
+		ytcl := &MockYTChannelLoad{
+			ReturnValue: &map[string]YTChannel{
+				"Channel1": MockYTChannel{
 					channel,
 					"123abc.com",
 					"123abc.com",
@@ -284,8 +284,8 @@ func TestGetAllLocalVideos(t *testing.T) {
 			VideoDirPath: "/a/path",
 		}
 
-		ytcl := &mockYTChannelLoad{
-			shouldError: true,
+		ytcl := &MockYTChannelLoad{
+			ShouldError: true,
 		}
 
 		_, err := getAllLocalVideos(cf, ytcl)
@@ -300,8 +300,8 @@ func TestGetAllLocalVideos(t *testing.T) {
 			VideoDirPath: "/a/path",
 		}
 
-		ytcl := &mockYTChannelLoad{
-			returnValue: nil,
+		ytcl := &MockYTChannelLoad{
+			ReturnValue: nil,
 		}
 
 		videos, err := getAllLocalVideos(cf, ytcl)
@@ -320,9 +320,9 @@ func TestGetAllLocalVideos(t *testing.T) {
 			VideoDirPath: "/a/path",
 		}
 
-		ytcl := &mockYTChannelLoad{
-			returnValue: &map[string]YTChannel{
-				"Channel1": mockYTChannel{
+		ytcl := &MockYTChannelLoad{
+			ReturnValue: &map[string]YTChannel{
+				"Channel1": MockYTChannel{
 					"Channel1",
 					"123abc.com",
 					"123abc.com",
@@ -337,7 +337,7 @@ func TestGetAllLocalVideos(t *testing.T) {
 					},
 					false,
 				},
-				"Channel2": mockYTChannel{
+				"Channel2": MockYTChannel{
 					"Channel2",
 					"123abc.com",
 					"123abc.com",
@@ -366,7 +366,7 @@ func TestGetAllLocalVideos(t *testing.T) {
 func TestGetLocalVideosFromDisk(t *testing.T) {
 	t.Run("getLocalVideosByYTChannel should load the correct results", func(t *testing.T) {
 		channelName := "TestChannel"
-		channel := &mockYTChannel{
+		channel := &MockYTChannel{
 			channelName,
 			"https://example.com/rss.xml",
 			"https://example.com/channel/",
@@ -418,7 +418,7 @@ func TestGetLocalVideosFromDisk(t *testing.T) {
 
 	t.Run("getLocalVideosByYTChannel should return an error if the dir lookup fails", func(t *testing.T) {
 		channelName := "TestChannel"
-		channel := &mockYTChannel{
+		channel := &MockYTChannel{
 			channelName,
 			"https://example.com/rss.xml",
 			"https://example.com/channel/",

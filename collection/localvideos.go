@@ -63,7 +63,7 @@ func GetVideoByID(ID string, cf *config.Config) (*Video, error) {
 	return getVideoByID(ID, cf, &YTChannelLoad{})
 }
 
-func getVideoByID(ID string, cf *config.Config, ytcl ytChannelLoader) (*Video, error) {
+func getVideoByID(ID string, cf *config.Config, ytcl YTChannelLoader) (*Video, error) {
 	videos, err := getAllLocalVideos(cf, ytcl)
 	if err != nil {
 		return nil, fmt.Errorf("Could not get Video with ID %s. Error %s", ID, err)
@@ -83,7 +83,7 @@ func GetAllLocalVideos(cf *config.Config) (*[]Video, error) {
 	return getAllLocalVideos(cf, &YTChannelLoad{})
 }
 
-func getAllLocalVideos(cf *config.Config, ytcl ytChannelLoader) (*[]Video, error) {
+func getAllLocalVideos(cf *config.Config, ytcl YTChannelLoader) (*[]Video, error) {
 	channels, err := ytcl.GetAvailableYTChannels(cf)
 	if err != nil {
 		return nil, fmt.Errorf("Cannot get all YT Channels. Got error %s", err)

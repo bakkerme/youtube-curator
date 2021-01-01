@@ -8,7 +8,8 @@ import (
 	"os"
 )
 
-type ytChannelLoader interface {
+// YTChannelLoader provides an interface for loading YT Channels
+type YTChannelLoader interface {
 	GetAvailableYTChannels(cf *config.Config) (*map[string]YTChannel, error)
 }
 
