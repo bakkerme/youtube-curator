@@ -16,12 +16,14 @@ func TestGetChannels(t *testing.T) {
 		expectedYTChannels := []collection.YTChannelData{
 			collection.YTChannelData{
 				IName:         "Channel1",
+				IID:           "asdfasdf",
 				IRSSURL:       "http://testurl",
 				IChannelURL:   "http://testurl",
 				IArchivalMode: "archive",
 			},
 			collection.YTChannelData{
 				IName:         "Channel2",
+				IID:           "asdfasdf",
 				IRSSURL:       "http://testurl2",
 				IChannelURL:   "http://testurl2",
 				IArchivalMode: "curated",
@@ -32,6 +34,7 @@ func TestGetChannels(t *testing.T) {
 			ReturnValue: &map[string]collection.YTChannel{
 				"Channel1": collection.MockYTChannel{
 					IName:                     expectedYTChannels[0].IName,
+					IID:                       expectedYTChannels[0].IID,
 					IRSSURL:                   expectedYTChannels[0].IRSSURL,
 					IChannelURL:               expectedYTChannels[0].IChannelURL,
 					IArchivalMode:             expectedYTChannels[0].IArchivalMode,
@@ -40,6 +43,7 @@ func TestGetChannels(t *testing.T) {
 				},
 				"Channel2": collection.MockYTChannel{
 					IName:                     expectedYTChannels[1].IName,
+					IID:                       expectedYTChannels[0].IID,
 					IRSSURL:                   expectedYTChannels[1].IRSSURL,
 					IChannelURL:               expectedYTChannels[1].IChannelURL,
 					IArchivalMode:             expectedYTChannels[1].IArchivalMode,
@@ -106,6 +110,7 @@ func TestGetChannelByID(t *testing.T) {
 
 		expectedYTChannel := collection.MockYTChannel{
 			IName:                     "Channel1",
+			IID:                       "asdfasdf",
 			IRSSURL:                   "http://testurl",
 			IChannelURL:               "http://testurl",
 			IArchivalMode:             "archive",
@@ -117,6 +122,7 @@ func TestGetChannelByID(t *testing.T) {
 			ReturnValue: &map[string]collection.YTChannel{
 				"Channel1": collection.MockYTChannel{
 					IName:                     "Channel2",
+					IID:                       "asdfasdf",
 					IRSSURL:                   "http://testurl2",
 					IChannelURL:               "http://testurl2",
 					IArchivalMode:             "curated",

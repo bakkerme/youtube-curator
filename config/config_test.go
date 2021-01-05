@@ -1,20 +1,30 @@
 package config
 
 import (
+	"errors"
 	"hyperfocus.systems/youtube-curator-server/testutils"
-	"os"
+	"hyperfocus.systems/youtube-curator-server/utils"
 	"reflect"
 	"testing"
 )
 
+var ytTestKey string = "123abc"
+var videoPath string = "/home/videos/"
+
 type TestingConfigProvider struct {
-	missingValue bool
+	returnError  bool
+	returnConfig *Config
 }
 
-var ytTestKey string = "123abc"
-var videoPath string = "/home/videos"
+func (tcp TestingConfigProvider) LoadConfig() (*Config, error) {
+	if tcp.returnError {
+		return nil, errors.New("An error is here")
+	}
 
-func (cp TestingConfigProvider) LoadConfig() (*Config, error) {
+	if tcp.returnConfig != nil {
+		return tcp.returnConfig, nil
+	}
+
 	return &Config{
 		YoutubeAPIKey: ytTestKey,
 		VideoDirPath:  videoPath,
@@ -31,34 +41,119 @@ func TestGetConfig(t *testing.T) {
 		if cf.YoutubeAPIKey != ytTestKey {
 			t.Errorf("YoutubeAPIKey is not the one provided by TestingConfigProvider. Expected %s got %s", ytTestKey, cf.YoutubeAPIKey)
 		}
+
+		if cf.VideoDirPath != videoPath {
+			t.Errorf("VideoDirPath is not the one provided by TestingConfigProvider. Expected %s got %s", videoPath, cf.VideoDirPath)
+		}
+	})
+
+	t.Run("Adds a / to the end of VideoDirPath without it", func(t *testing.T) {
+		path := "/a/path"
+		cf, err := GetConfig(&TestingConfigProvider{
+			returnConfig: &Config{
+				YoutubeAPIKey: "asdf123",
+				VideoDirPath:  path,
+			},
+		})
+		if err != nil {
+			t.Errorf("GetConfig returned error %s", err)
+		}
+
+		if cf.VideoDirPath != path+"/" {
+			t.Errorf("A / was not added to the end of the video path")
+		}
+	})
+
+	t.Run("Returns an error if LoadConfig fails", func(t *testing.T) {
+		_, err := GetConfig(&TestingConfigProvider{returnError: true})
+		if err == nil {
+			t.Errorf("Expected an error to be returned")
+		}
+	})
+
+	t.Run("Returns an error if YoutubeAPIKey field is invalid", func(t *testing.T) {
+		_, err := GetConfig(&TestingConfigProvider{
+			returnConfig: &Config{
+				YoutubeAPIKey: "",
+				VideoDirPath:  "/a/test",
+			},
+		})
+		if err == nil {
+			t.Errorf("Expected an error to be returned")
+		}
+	})
+
+	t.Run("Returns an error if VideoDirPath field is invalid", func(t *testing.T) {
+		_, err := GetConfig(&TestingConfigProvider{
+			returnConfig: &Config{
+				YoutubeAPIKey: "123abc",
+				VideoDirPath:  "",
+			},
+		})
+		if err == nil {
+			t.Errorf("Expected an error to be returned")
+		}
+	})
+
+	t.Run("Returns an error if VideoDirPath field is invalid", func(t *testing.T) {
+		_, err := GetConfig(&TestingConfigProvider{
+			returnConfig: &Config{
+				YoutubeAPIKey: "123abc",
+				VideoDirPath:  "",
+			},
+		})
+		if err == nil {
+			t.Errorf("Expected an error to be returned")
+		}
 	})
 }
 
 func TestEnvarConfigProvider(t *testing.T) {
-	t.Run("Returns a set key envar", func(t *testing.T) {
-		key := "TEST_KEY"
-		value := "VALUE"
-		err := os.Setenv(key, value)
-		if err != nil {
-			t.Error(err)
+	t.Run("LoadConfig runs correctly", func(t *testing.T) {
+		expectConfig := &Config{
+			YoutubeAPIKey: "123abc",
+			VideoDirPath:  "/a/path",
 		}
 
 		ecp := &EnvarConfigProvider{}
-		result, err := ecp.getValue(key)
+		cfg, err := ecp.loadConfig(&utils.MockEnvRead{
+			ReturnValueForInput: map[string]string{
+				"YOUTUBE_API_KEY": "123abc",
+				"VIDEO_DIR_PATH":  "/a/path",
+			},
+		})
 		if err != nil {
 			t.Error(err)
 		}
 
-		if result != value {
-			t.Errorf("EnvarConfigProvider GetValue did not present a correct value. Expected %s, got %s", value, result)
+		if !reflect.DeepEqual(expectConfig, cfg) {
+			t.Errorf("EnvarConfigProvider did not provide correct config. Expected\n%s\ngot\n%s", expectConfig, cfg)
 		}
 	})
 
-	t.Run("Throws an error if value is not set", func(t *testing.T) {
+	t.Run("LoadConfig returns an error when it can't find YOUTUBE_API_KEY", func(t *testing.T) {
 		ecp := &EnvarConfigProvider{}
-		_, err := ecp.getValue("SOME_NONEXISTENT_VALUE")
+		_, err := ecp.loadConfig(&utils.MockEnvRead{
+			ReturnValueForInput: map[string]string{
+				"VIDEO_DIR_PATH": "/a/path",
+			},
+		})
+
 		if err == nil {
-			t.Errorf("EnvarConfigProvider should have returned an error for a non-existent-value")
+			t.Error("loadConfig should have returned error")
+		}
+	})
+
+	t.Run("LoadConfig returns an error when it can't find VIDEO_DIR_PATH", func(t *testing.T) {
+		ecp := &EnvarConfigProvider{}
+		_, err := ecp.loadConfig(&utils.MockEnvRead{
+			ReturnValueForInput: map[string]string{
+				"YOUTUBE_API_KEY": "123abc",
+			},
+		})
+
+		if err == nil {
+			t.Error("loadConfig should have returned error")
 		}
 	})
 }

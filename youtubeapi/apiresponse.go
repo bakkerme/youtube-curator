@@ -56,17 +56,18 @@ type Video struct {
 	Snippet VideoSnippet `json:"snippet,omitempty"`
 }
 
-// VideoListResponse The top level return from the video list API
-type VideoListResponse struct {
+// VideoMetadataResponse The top level return from the video list API
+type VideoMetadataResponse struct {
 	Kind          string   `json:"kind,omitempty"`
 	Etag          string   `json:"etag,omitempty"`
-	Items         []Video  `json:"items,omitempty"`
-	PageInfo      PageInfo `json:"pageInfo,omitempty"`
 	NextPageToken string   `json:"nextPageToken,omitempty"`
+	RegionCode    string   `json:"regionCode,omitempty"`
+	PageInfo      PageInfo `json:"pageInfo,omitempty"`
+	Items         []Video  `json:"items,omitempty"`
 }
 
-func convertVideoAPIResponse(file string) (*VideoListResponse, error) {
-	var resp VideoListResponse
+func convertVideoAPIResponse(file string) (*VideoMetadataResponse, error) {
+	var resp VideoMetadataResponse
 	if err := json.Unmarshal([]byte(file), &resp); err != nil {
 		return nil, err
 	}

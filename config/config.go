@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"hyperfocus.systems/youtube-curator-server/utils"
-	"os"
 )
 
 // Config represents application-level configuration
@@ -56,30 +55,24 @@ type EnvarConfigProvider struct{}
 
 // LoadConfig loads a config file from the set environment variables
 func (cp EnvarConfigProvider) LoadConfig() (*Config, error) {
-	youtubeAPIKey, err := cp.getValue("YOUTUBE_API_KEY")
-	if err != nil {
-		return nil, err
+	return cp.loadConfig(&utils.EnvRead{})
+}
+
+func (cp EnvarConfigProvider) loadConfig(envr utils.EnvReader) (*Config, error) {
+	youtubeAPIKey, didFind := envr.LookupEnv("YOUTUBE_API_KEY")
+	if !didFind {
+		return nil, errors.New("Could not find YOUTUBE_API_KEY")
 	}
 
-	videoDirPath, err := cp.getValue("VIDEO_DIR_PATH")
-	if err != nil {
-		return nil, err
+	videoDirPath, didFind := envr.LookupEnv("VIDEO_DIR_PATH")
+	if !didFind {
+		return nil, errors.New("Could not find VIDEO_DIR_PATH")
 	}
 
 	return &Config{
 		YoutubeAPIKey: youtubeAPIKey,
 		VideoDirPath:  videoDirPath,
 	}, nil
-}
-
-// GetValue looks up a config value in the environment variables
-func (cp EnvarConfigProvider) getValue(key string) (string, error) {
-	result, didFind := os.LookupEnv(key)
-	if !didFind {
-		return "", fmt.Errorf("Could not find %s in Environment for Config", key)
-	}
-
-	return result, nil
 }
 
 // FileConfigProvider provides configuration from the environment variables

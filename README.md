@@ -34,6 +34,7 @@ Run:
 ## TODO
 * Initial implementation of API Video lookup functions
 * Reimplement Up2Date functionality with Youtube API
+* Check out etag system for youtube API
 * Job function WIP
 * Unite all the disparate Video representations
 * Refactor disk lookups for more speed

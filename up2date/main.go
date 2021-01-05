@@ -76,7 +76,7 @@ func getVideoUpdatesForYTChannel(ytc collection.YTChannel, cfg *config.Config) (
 		return nil, fmt.Errorf("Could not get videos off disk for ytc %s, error %s", ytc.Name(), err)
 	}
 
-	entriesToDownload := collection.GetEntriesNotInVideoList(&entries, videos)
+	entriesToDownload := GetEntriesNotInVideoList(&entries, videos)
 
 	return entriesToDownload, nil
 }

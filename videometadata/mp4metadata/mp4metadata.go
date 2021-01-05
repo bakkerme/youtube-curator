@@ -10,11 +10,11 @@ import (
 	"time"
 )
 
-// MP4MetadataCommandProvider provides the ability for the VideoMetadata
-type MP4MetadataCommandProvider struct{}
+// CommandProvider provides the ability for the VideoMetadata
+type CommandProvider struct{}
 
 // Run MP4Info on the provided file
-func (m MP4MetadataCommandProvider) Run(path string) (string, error) {
+func (m CommandProvider) Run(path string) (string, error) {
 	return getMetadata(path, &utils.OSCommand{})
 }
 
@@ -33,22 +33,22 @@ func getMetadata(path string, osc utils.OSCommandProvider) (string, error) {
 }
 
 // ParseTitle parses the title from the MP4Info output
-func (m MP4MetadataCommandProvider) ParseTitle(output string) (string, error) {
+func (m CommandProvider) ParseTitle(output string) (string, error) {
 	return parseOutputStringForRegex(`(?msU)Title\s+(?P<content>\S.*$)`, output)
 }
 
 // ParseDescription parses the description from the MP4Info output
-func (m MP4MetadataCommandProvider) ParseDescription(output string) (string, error) {
+func (m CommandProvider) ParseDescription(output string) (string, error) {
 	return parseOutputStringForRegex(`(?msU)Comment\s+(?P<content>\S.*)Record date`, output)
 }
 
 // ParseCreator parses the creator from the MP4Info output
-func (m MP4MetadataCommandProvider) ParseCreator(output string) (string, error) {
+func (m CommandProvider) ParseCreator(output string) (string, error) {
 	return parseOutputStringForRegex(`(?msU)Artist\s+(?P<content>\S.*$)`, output)
 }
 
 // ParsePublishedAt parses the publishedAt from the MP4Info output
-func (m MP4MetadataCommandProvider) ParsePublishedAt(output string) (*time.Time, error) {
+func (m CommandProvider) ParsePublishedAt(output string) (*time.Time, error) {
 	str, err := parseOutputStringForRegex(`(?msU)Record date\s+(?P<content>\S.*$)`, output)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (m MP4MetadataCommandProvider) ParsePublishedAt(output string) (*time.Time,
 }
 
 // ParseDuration parses the duration from the MP4Info output
-func (m MP4MetadataCommandProvider) ParseDuration(output string) (*time.Duration, error) {
+func (m CommandProvider) ParseDuration(output string) (*time.Duration, error) {
 	hourRegex := `(?m)(?P<hour>\d*)\shr`
 	minuteRegex := `(?m)(?P<minutes>\d*)\smin`
 	secondsRegex := `(?m)(?P<seconds>\d*)\ss`
@@ -99,7 +99,7 @@ func parseOutputStringForRegex(regex string, output string) (string, error) {
 }
 
 // Set sets metadata on an mp4 item
-func (m MP4MetadataCommandProvider) Set(path string, metadata *videometadata.Metadata) error {
+func (m CommandProvider) Set(path string, metadata *videometadata.Metadata) error {
 	values, err := buildTagEditorSetString(metadata)
 	if err != nil {
 		return err

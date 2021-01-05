@@ -88,3 +88,20 @@ func (dr *DirReader) ReadFile(path string) ([]byte, error) {
 func (dr *DirReader) GetHomeDirPath() string {
 	return os.Getenv("HOME")
 }
+
+// EnvReader provides the ability to look up environment variables
+type EnvReader interface {
+	LookupEnv(key string) (string, bool)
+}
+
+// EnvRead implements EnvReader to provide the ability to look up environment variables
+type EnvRead struct{}
+
+// LookupEnv retrieves the value of the environment variable named
+// by the key. If the variable is present in the environment the
+// value (which may be empty) is returned and the boolean is true.
+// Otherwise the returned value will be empty and the boolean will
+// be false.
+func (envr *EnvRead) LookupEnv(key string) (string, bool) {
+	return os.LookupEnv(key)
+}

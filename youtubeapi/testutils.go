@@ -1,10 +1,8 @@
 package youtubeapi
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 )
 
 var vlVideo1 = Video{
@@ -168,7 +166,7 @@ var vlVideo3 = Video{
 
 // VLExpectedFull contains an expected VideoListResponse for the videoresponse.json file
 // in the testfiles directory
-var vlExpectedFull = VideoListResponse{
+var vlExpectedFull = VideoMetadataResponse{
 	Kind:  "youtube#videoListResponse",
 	Etag:  "1-lTCZCHtgPgr709KQ0ef2Mu4oM",
 	Items: []Video{vlVideo1, vlVideo2, vlVideo3},
@@ -180,7 +178,7 @@ var vlExpectedFull = VideoListResponse{
 
 // VLExpectedSingleVideo contains an expected VideoListResponse for the videoresponse_single.json file
 // in the testfiles directory
-var vlExpectedSingleVideo = VideoListResponse{
+var vlExpectedSingleVideo = VideoMetadataResponse{
 	Kind:  "youtube#videoListResponse",
 	Etag:  "1-lTCZCHtgPgr709KQ0ef2Mu4oM",
 	Items: []Video{vlVideo1},
@@ -199,44 +197,4 @@ func loadFile(filePath string) ([]byte, error) {
 	}
 
 	return file, nil
-}
-
-var fakeErrorMessage = "The puppy-girl did the loudest bark"
-
-type mockHTTPClient struct {
-	throwError          bool
-	statusCodeToReturn  int
-	malformJSONResponse bool
-	responseFile        string
-}
-
-func (ht *mockHTTPClient) Get(url string) (*http.Response, []byte, error) {
-	var testFile []byte
-	if ht.responseFile != "" {
-		tt, err := loadFile(ht.responseFile)
-		if err != nil {
-			return nil, nil, err
-		}
-
-		testFile = tt
-	}
-
-	if ht.throwError {
-		return nil, nil, errors.New(fakeErrorMessage)
-	}
-
-	statuscode := 200
-	if ht.statusCodeToReturn > 0 {
-		statuscode = ht.statusCodeToReturn
-	}
-
-	response := &http.Response{
-		StatusCode: statuscode,
-	}
-
-	if ht.malformJSONResponse {
-		testFile = []byte("{[sdfsd{")
-	}
-
-	return response, testFile, nil
 }

@@ -77,6 +77,7 @@ func TestGetYoutubeDLCommandForVideoList(t *testing.T) {
 	t.Run("returns correct comamnd from video list", func(t *testing.T) {
 		channel := collection.YTChannelData{
 			IName:         "TestChannel",
+			IID:           "asdfasdf",
 			IRSSURL:       "http://example.com/rss.xml",
 			IChannelURL:   "http://example.com/channel",
 			IArchivalMode: collection.ArchivalModeCurated,
@@ -97,6 +98,7 @@ func TestCommandForArchivalType(t *testing.T) {
 		channelURL := "http://example.com/channel"
 		ytchannel := collection.YTChannelData{
 			IName:         "TestChannel",
+			IID:           "asdfasdf",
 			IRSSURL:       "http://example.com/rss.xml",
 			IChannelURL:   channelURL,
 			IArchivalMode: collection.ArchivalModeArchive,
@@ -116,6 +118,7 @@ func TestCommandForArchivalType(t *testing.T) {
 		channelURL := "http://example.com/channel"
 		ytchannel := collection.YTChannelData{
 			IName:         "TestChannel",
+			IID:           "asdfasdf",
 			IRSSURL:       "http://example.com/rss.xml",
 			IChannelURL:   channelURL,
 			IArchivalMode: collection.ArchivalModeCurated,

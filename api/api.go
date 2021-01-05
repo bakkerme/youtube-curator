@@ -41,6 +41,7 @@ func getChannels(cfg *config.Config, ytcl collection.YTChannelLoader) (*[]collec
 	for _, ytChannel := range *ytChannels {
 		ytChannelResponse = append(ytChannelResponse, collection.YTChannelData{
 			IName:         ytChannel.Name(),
+			IID:           ytChannel.ID(),
 			IRSSURL:       ytChannel.RSSURL(),
 			IChannelURL:   ytChannel.ChannelURL(),
 			IArchivalMode: ytChannel.ArchivalMode(),

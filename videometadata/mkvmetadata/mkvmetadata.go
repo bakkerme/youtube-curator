@@ -10,11 +10,11 @@ import (
 	"time"
 )
 
-// MKVMetadataCommandProvider provides the ability for the VideoMetadata
-type MKVMetadataCommandProvider struct{}
+// CommandProvider provides the ability for the VideoMetadata
+type CommandProvider struct{}
 
 // Run MKVInfo on the provided file
-func (m MKVMetadataCommandProvider) Run(path string) (string, error) {
+func (m CommandProvider) Run(path string) (string, error) {
 	return getMetadata(path, &utils.OSCommand{})
 }
 
@@ -28,22 +28,22 @@ func getMetadata(path string, osc utils.OSCommandProvider) (string, error) {
 }
 
 // ParseTitle parses the title from the MKVInfo output
-func (m MKVMetadataCommandProvider) ParseTitle(output string) (string, error) {
+func (m CommandProvider) ParseTitle(output string) (string, error) {
 	return parseOutputStringForRegex(`(?m)\| \+ Title: (?P<content>.*$)`, output)
 }
 
 // ParseDescription parses the description from the MKVInfo output
-func (m MKVMetadataCommandProvider) ParseDescription(output string) (string, error) {
+func (m CommandProvider) ParseDescription(output string) (string, error) {
 	return parseOutputStringForRegex(`(?msU)\+ Name: DESCRIPTION.*String: (?P<content>.*)\n^\|`, output)
 }
 
 // ParseCreator parses the creator from the MKVInfo output
-func (m MKVMetadataCommandProvider) ParseCreator(output string) (string, error) {
+func (m CommandProvider) ParseCreator(output string) (string, error) {
 	return parseOutputStringForRegex(`(?msU)ARTIST.*String: (?P<content>.*$)`, output)
 }
 
 // ParsePublishedAt parses the publishedAt from the MKVInfo output
-func (m MKVMetadataCommandProvider) ParsePublishedAt(output string) (*time.Time, error) {
+func (m CommandProvider) ParsePublishedAt(output string) (*time.Time, error) {
 	str, err := parseOutputStringForRegex(`(?msU)DATE.*String: (?P<content>.*$)`, output)
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func (m MKVMetadataCommandProvider) ParsePublishedAt(output string) (*time.Time,
 }
 
 // ParseDuration parses the duration from the MKVInfo output
-func (m MKVMetadataCommandProvider) ParseDuration(output string) (*time.Duration, error) {
+func (m CommandProvider) ParseDuration(output string) (*time.Duration, error) {
 	str, err := parseOutputStringForRegex(`(?msU)Duration: (?P<content>.*$)`, output)
 	if err != nil {
 		return nil, err
@@ -82,7 +82,7 @@ func (m MKVMetadataCommandProvider) ParseDuration(output string) (*time.Duration
 }
 
 // Set sets metadata on an mkv item
-func (m MKVMetadataCommandProvider) Set(path string, metadata *videometadata.Metadata) error {
+func (m CommandProvider) Set(path string, metadata *videometadata.Metadata) error {
 	return errors.New("MKVInfo does not implement Set right now")
 }
 

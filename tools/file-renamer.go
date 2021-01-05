@@ -5,7 +5,7 @@ import (
 	"hyperfocus.systems/youtube-curator-server/collection"
 	"hyperfocus.systems/youtube-curator-server/config"
 	"hyperfocus.systems/youtube-curator-server/videometadata"
-	"hyperfocus.systems/youtube-curator-server/videometadata/tageditor"
+	"hyperfocus.systems/youtube-curator-server/videometadata/mkvmetadata"
 	"hyperfocus.systems/youtube-curator-server/youtubeapi"
 	"log"
 	"math"

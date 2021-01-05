@@ -35,6 +35,7 @@ func (f mockFileInfo) Sys() interface{} {
 // MockYTChannel is a struct that represents the configuration for each channel archived
 type MockYTChannel struct {
 	IName                     string
+	IID                       string
 	IRSSURL                   string
 	IChannelURL               string
 	IArchivalMode             string
@@ -54,6 +55,11 @@ func (ytc MockYTChannel) GetLocalVideos(cf *config.Config) (*[]Video, error) {
 // Name returns the name
 func (ytc MockYTChannel) Name() string {
 	return ytc.IName
+}
+
+// ID returns the ID
+func (ytc MockYTChannel) ID() string {
+	return ytc.IID
 }
 
 // RSSURL returns the RSS URL

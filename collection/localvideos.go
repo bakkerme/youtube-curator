@@ -1,14 +1,11 @@
 package collection
 
 import (
-	"errors"
 	"fmt"
 	"hyperfocus.systems/youtube-curator-server/config"
 	"hyperfocus.systems/youtube-curator-server/videometadata"
 	"hyperfocus.systems/youtube-curator-server/videometadata/mkvmetadata"
 	"hyperfocus.systems/youtube-curator-server/videometadata/mp4metadata"
-	"regexp"
-	"strings"
 )
 
 // GetVideoMetadata looks up the metadata for a given Video and returns a VideoWithMetadata
@@ -48,14 +45,14 @@ func getMetadataCommandProviderForFileType(filetype string) (videometadata.Comma
 	}
 
 	if mp4 {
-		return mp4metadata.MP4MetadataCommandProvider{}, nil
+		return mp4metadata.CommandProvider{}, nil
 	}
 
 	if mkv {
-		return mkvmetadata.MKVMetadataCommandProvider{}, nil
+		return mkvmetadata.CommandProvider{}, nil
 	}
 
-	return nil, nil
+	return nil, fmt.Errorf("Cannot find metadata parser for %s", filetype)
 }
 
 // GetVideoByID finds a local Video file on disk with a provided ID
@@ -104,68 +101,4 @@ func getAllLocalVideos(cf *config.Config, ytcl YTChannelLoader) (*[]Video, error
 	}
 
 	return &videoList, nil
-}
-
-// Given a filename of a video on disk (created with youtube-dl), grab
-// the filename from it and extract the video ID
-func getVideoIDFromFileName(filename string) (string, error) {
-	parseError := fmt.Errorf("Could not parse video ID for video %s", filename)
-
-	re := regexp.MustCompile(`(\..{3}$)`)
-	withoutType := re.ReplaceAllString(filename, "")
-
-	if len(withoutType) < 11 {
-		return "", parseError
-	}
-
-	id := withoutType[len(withoutType)-11 : len(withoutType)] // Get last 11 chars
-
-	if len(id) != len(strings.ReplaceAll(id, " ", "")) { // This is probably not an ID
-		return "", parseError
-	}
-
-	return id, nil
-}
-
-func isValidVideo(filename string) (bool, error) {
-	is, err := isMP4(filename)
-	if is {
-		return is, err
-	}
-
-	is, err = isMKV(filename)
-	if is {
-		return is, err
-	}
-
-	return false, nil
-}
-
-func isMP4(filename string) (bool, error) {
-	if filename == "mp4" {
-		return true, nil
-	}
-
-	fileType, err := getFileType(filename)
-	return fileType == "mp4", err
-}
-
-func isMKV(filename string) (bool, error) {
-	if filename == "mkv" {
-		return true, nil
-	}
-
-	fileType, err := getFileType(filename)
-	return fileType == "mkv", err
-}
-
-func getFileType(filename string) (string, error) {
-	split := strings.Split(filename, ".")
-	final := split[len(split)-1]
-
-	if len(split) <= 1 || final == "" {
-		return "", errors.New("Invalid file type, must have extension")
-	}
-
-	return strings.ToLower(final), nil
 }

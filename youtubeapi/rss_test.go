@@ -2,6 +2,7 @@ package youtubeapi
 
 import (
 	"fmt"
+	"hyperfocus.systems/youtube-curator-server/utils"
 	"io/ioutil"
 	"reflect"
 	"testing"
@@ -100,7 +101,13 @@ func TestConvertRSSStringToRSS(t *testing.T) {
 
 func TestGetRSSFeed(t *testing.T) {
 	t.Run("GetRSSFeed pulls data over HTTP and converts it to RSS", func(t *testing.T) {
-		rss, err := GetRSSFeed("testurl.homebase", &mockHTTPClient{statusCodeToReturn: 200, responseFile: "./testfiles/test.xml"})
+		rss, err := GetRSSFeed(
+			"testurl.homebase",
+			&utils.MockHTTPClient{
+				StatusCode:   200,
+				BodyFilePath: "./testfiles/test.xml",
+			},
+		)
 
 		if err != nil {
 			t.Error(err)
@@ -112,7 +119,10 @@ func TestGetRSSFeed(t *testing.T) {
 	})
 
 	t.Run("GetRSSFeed returns an error if HTTP Client returns an error", func(t *testing.T) {
-		_, err := GetRSSFeed("testurl.homebase", &mockHTTPClient{throwError: true})
+		_, err := GetRSSFeed(
+			"testurl.homebase",
+			&utils.MockHTTPClient{ThrowError: true},
+		)
 
 		if err == nil {
 			t.Errorf("Expected GetRSSFeed would return an error")
@@ -120,7 +130,7 @@ func TestGetRSSFeed(t *testing.T) {
 	})
 
 	t.Run("GetRSSFeed returns an error if HTTP status code is not 200", func(t *testing.T) {
-		_, err := GetRSSFeed("testurl.homebase", &mockHTTPClient{statusCodeToReturn: 400})
+		_, err := GetRSSFeed("testurl.homebase", &utils.MockHTTPClient{StatusCode: 400})
 
 		fmt.Println(err)
 		if err == nil {

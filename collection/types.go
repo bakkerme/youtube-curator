@@ -15,6 +15,7 @@ const ArchivalModeCurated = "curated"
 // YTChannel provides an interface for interacting with a YT Channel
 type YTChannel interface {
 	GetLocalVideos(cf *config.Config) (*[]Video, error)
+	ID() string
 	Name() string
 	RSSURL() string
 	ChannelURL() string
@@ -39,6 +40,7 @@ type VideoWithMetadata struct {
 // YTChannelData is a struct that represents the configuration for each channel archived
 type YTChannelData struct {
 	IName         string `json:"name"`
+	IID           string `json:"id"`
 	IRSSURL       string `json:"rssURL"`
 	IChannelURL   string `json:"channelURL"`
 	IArchivalMode string `json:"archivalMode"`
@@ -52,6 +54,11 @@ func (ytc YTChannelData) GetLocalVideos(cf *config.Config) (*[]Video, error) {
 // Name returns the name
 func (ytc YTChannelData) Name() string {
 	return ytc.IName
+}
+
+// ID returns the ID
+func (ytc YTChannelData) ID() string {
+	return ytc.IID
 }
 
 // RSSURL returns the RSS URL

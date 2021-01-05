@@ -74,7 +74,7 @@ func TestReadMetadata(t *testing.T) {
 }
 
 func TestStringParsers(t *testing.T) {
-	commandProvider := MKVMetadataCommandProvider{}
+	commandProvider := CommandProvider{}
 
 	t.Run("ParseTitle should parse out a title", func(t *testing.T) {
 		expectedTitle := "A Title"
@@ -267,7 +267,7 @@ func TestStringParsers(t *testing.T) {
 func TestCommands(t *testing.T) {
 	t.Run("MKVMetadataCommandProvider should throw error for Set since it's unimpemented :)", func(t *testing.T) {
 		var cmdProv videometadata.CommandProvider
-		cmdProv = MKVMetadataCommandProvider{}
+		cmdProv = CommandProvider{}
 
 		err := cmdProv.Set("", nil)
 		if err == nil {
@@ -279,7 +279,7 @@ func TestCommands(t *testing.T) {
 func TestInterface(t *testing.T) {
 	t.Run("MKVMetadataCommandProvider should be a CommandProvider", func(t *testing.T) {
 		var cmdProv videometadata.CommandProvider
-		cmdProv = MKVMetadataCommandProvider{}
+		cmdProv = CommandProvider{}
 
 		t.Logf("lets use cmdProv so the compiler doesn't get mad %s", cmdProv)
 	})

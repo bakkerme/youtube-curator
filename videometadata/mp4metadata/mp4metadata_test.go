@@ -78,7 +78,7 @@ func TestReadMetadata(t *testing.T) {
 }
 
 func TestStringParsers(t *testing.T) {
-	commandProvider := MP4MetadataCommandProvider{}
+	commandProvider := CommandProvider{}
 
 	t.Run("ParseTitle should parse out a title", func(t *testing.T) {
 		expectedTitle := "A Title"
@@ -375,7 +375,7 @@ func TestWrite(t *testing.T) {
 		}
 
 		var cmdProv videometadata.CommandProvider
-		cmdProv = MP4MetadataCommandProvider{}
+		cmdProv = CommandProvider{}
 
 		err := cmdProv.Set("/dev/null", mt)
 		if err == nil {
@@ -387,7 +387,7 @@ func TestWrite(t *testing.T) {
 func TestInterface(t *testing.T) {
 	t.Run("MP4MetadataCommandProvider should be a CommandProvider", func(t *testing.T) {
 		var cmdProv videometadata.CommandProvider
-		cmdProv = MP4MetadataCommandProvider{}
+		cmdProv = CommandProvider{}
 
 		t.Logf("lets use cmdProv so the compiler doesn't get mad %s", cmdProv)
 	})
