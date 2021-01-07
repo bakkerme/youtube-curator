@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"hyperfocus.systems/youtube-curator-server/collection"
 	"hyperfocus.systems/youtube-curator-server/config"
+	"hyperfocus.systems/youtube-curator-server/youtubeapi"
 	// "hyperfocus.systems/youtube-curator-server/videometadata"
 	"net/http"
 )
@@ -88,7 +89,57 @@ func getChannelByID(id string, cfg *config.Config, ytcl collection.YTChannelLoad
 
 // CheckChannelUpdates checks the Youtube API for updates to a Channel's Videos
 func (yt *YTAPI) CheckChannelUpdates(ctx echo.Context, channelID string) error {
-	return fmt.Errorf("unimplemented")
+	videos, err := checkChannelUpdates(channelID, yt.cfg, &collection.YTChannelLoad{}, &youtubeapi.API{})
+	if err != nil {
+		return fmt.Errorf("Could not get channels. Error %s ", err)
+	}
+
+	resp, err := json.Marshal(videos)
+	if err != nil {
+		return fmt.Errorf("Could not get channels. Error %s ", err)
+	}
+
+	return ctx.String(http.StatusOK, string(resp))
+}
+
+func checkChannelUpdates(
+	channelID string,
+	cfg *config.Config,
+	ytcl collection.YTChannelLoader,
+	ytAPI youtubeapi.APIRequester,
+) (*[]Video, error) {
+	ytcInterface, err := getChannelByID(channelID, cfg, ytcl)
+	ytc := *ytcInterface
+	if err != nil {
+		return nil, err
+	}
+
+	remoteVideos, err := ytAPI.GetVideosForChannel(ytc, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	localVideos, err := ytc.GetLocalVideos(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("Could not get videos off disk for ytc %s, error %s", ytc.Name(), err)
+	}
+
+	remoteVideosToDownload := getEntriesNotInVideoList(&remoteVideos.Items, localVideos)
+
+	var returnVideos []Video
+	for _, video := range *remoteVideosToDownload {
+		snippet := video.Snippet
+
+		returnVideos = append(returnVideos, Video{
+			Creator:     ytc.Name(),
+			Description: snippet.Description,
+			ID:          video.ID,
+			PublishedAt: snippet.PublishedAt,
+			Title:       snippet.Title,
+		})
+	}
+
+	return &returnVideos, nil
 }
 
 // GetJobs returns all Jobs. THIS IS A STUB
@@ -96,13 +147,13 @@ func (yt *YTAPI) GetJobs(ctx echo.Context, params GetJobsParams) error {
 	resp := &[]Job{
 		Job{
 			Finished: true,
-			Id:       0,
+			ID:       0,
 			Running:  false,
 			Type:     "youtube-dl",
 		},
 		Job{
 			Finished: false,
-			Id:       1,
+			ID:       1,
 			Running:  true,
 			Type:     "youtube-dl",
 		},

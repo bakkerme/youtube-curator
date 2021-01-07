@@ -328,7 +328,7 @@ components:
         application/json:
           schema:
             properties:
-              id:
+              ID:
                 type: string
   schemas:
     Video:
@@ -338,7 +338,7 @@ components:
         path:
           type: string
           minLength: 1
-        id:
+        ID:
           type: string
           minLength: 1
         fileType:
@@ -361,7 +361,7 @@ components:
           minLength: 1
       required:
         - path
-        - id
+        - ID
         - fileType
         - title
         - description
@@ -374,7 +374,7 @@ components:
       type: object
       title: Job
       properties:
-        id:
+        ID:
           type: number
         type:
           type: string
@@ -384,7 +384,7 @@ components:
         running:
           type: boolean
       required:
-        - id
+        - ID
         - type
         - finished
         - running

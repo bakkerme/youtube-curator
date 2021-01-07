@@ -3,30 +3,31 @@ package api
 import (
 	"hyperfocus.systems/youtube-curator-server/collection"
 	"hyperfocus.systems/youtube-curator-server/config"
+	"hyperfocus.systems/youtube-curator-server/youtubeapi"
 	"reflect"
 	"testing"
 )
 
+var cf = config.Config{
+	VideoDirPath: "/a/path",
+}
+
 func TestGetChannels(t *testing.T) {
 	t.Run("getChannels should return correct results", func(t *testing.T) {
-		cfg := config.Config{
-			VideoDirPath: "/a/path",
-		}
-
 		expectedYTChannels := []collection.YTChannelData{
 			collection.YTChannelData{
 				IName:         "Channel1",
 				IID:           "asdfasdf",
 				IRSSURL:       "http://testurl",
 				IChannelURL:   "http://testurl",
-				IArchivalMode: "archive",
+				IArchivalMode: collection.ArchivalModeArchive,
 			},
 			collection.YTChannelData{
 				IName:         "Channel2",
 				IID:           "asdfasdf",
 				IRSSURL:       "http://testurl2",
 				IChannelURL:   "http://testurl2",
-				IArchivalMode: "curated",
+				IArchivalMode: collection.ArchivalModeArchive,
 			},
 		}
 
@@ -43,7 +44,7 @@ func TestGetChannels(t *testing.T) {
 				},
 				"Channel2": collection.MockYTChannel{
 					IName:                     expectedYTChannels[1].IName,
-					IID:                       expectedYTChannels[0].IID,
+					IID:                       expectedYTChannels[1].IID,
 					IRSSURL:                   expectedYTChannels[1].IRSSURL,
 					IChannelURL:               expectedYTChannels[1].IChannelURL,
 					IArchivalMode:             expectedYTChannels[1].IArchivalMode,
@@ -53,27 +54,35 @@ func TestGetChannels(t *testing.T) {
 			},
 		}
 
-		ytChannels, err := getChannels(&cfg, &ytcl)
+		ytChannels, err := getChannels(&cf, &ytcl)
 
 		if err != nil {
 			t.Error(err)
 		}
 
-		if !reflect.DeepEqual(expectedYTChannels, *ytChannels) {
+		match1 := false
+		match2 := false
+		for _, ytch := range *ytChannels {
+			if reflect.DeepEqual(expectedYTChannels[0], ytch) {
+				match1 = true
+			}
+
+			if reflect.DeepEqual(expectedYTChannels[1], ytch) {
+				match2 = true
+			}
+		}
+
+		if !match1 || !match2 {
 			t.Errorf("getChannels did not return correct result. Expected\n%+v\ngot\n%+v", expectedYTChannels, *ytChannels)
 		}
 	})
 
 	t.Run("getChannels should return an empty YTChannelData slice when no channels are available", func(t *testing.T) {
-		cfg := config.Config{
-			VideoDirPath: "/a/path",
-		}
-
 		ytcl := collection.MockYTChannelLoad{
 			ReturnValue: &map[string]collection.YTChannel{},
 		}
 
-		ytChannels, err := getChannels(&cfg, &ytcl)
+		ytChannels, err := getChannels(&cf, &ytcl)
 
 		if err != nil {
 			t.Error(err)
@@ -85,16 +94,12 @@ func TestGetChannels(t *testing.T) {
 	})
 
 	t.Run("getChannels should return an error when the channel loader returns an error", func(t *testing.T) {
-		cfg := config.Config{
-			VideoDirPath: "/a/path",
-		}
-
 		ytcl := collection.MockYTChannelLoad{
 			ReturnValue: nil,
 			ShouldError: true,
 		}
 
-		_, err := getChannels(&cfg, &ytcl)
+		_, err := getChannels(&cf, &ytcl)
 
 		if err == nil {
 			t.Error("Should have returned an error")
@@ -104,16 +109,12 @@ func TestGetChannels(t *testing.T) {
 
 func TestGetChannelByID(t *testing.T) {
 	t.Run("getChannelByID should return correct result", func(t *testing.T) {
-		cfg := config.Config{
-			VideoDirPath: "/a/path",
-		}
-
 		expectedYTChannel := collection.MockYTChannel{
 			IName:                     "Channel1",
 			IID:                       "asdfasdf",
 			IRSSURL:                   "http://testurl",
 			IChannelURL:               "http://testurl",
-			IArchivalMode:             "archive",
+			IArchivalMode:             collection.ArchivalModeArchive,
 			ILocalVideos:              nil,
 			ShouldErrorGetLocalVideos: false,
 		}
@@ -125,7 +126,7 @@ func TestGetChannelByID(t *testing.T) {
 					IID:                       "asdfasdf",
 					IRSSURL:                   "http://testurl2",
 					IChannelURL:               "http://testurl2",
-					IArchivalMode:             "curated",
+					IArchivalMode:             collection.ArchivalModeArchive,
 					ILocalVideos:              nil,
 					ShouldErrorGetLocalVideos: false,
 				},
@@ -133,7 +134,7 @@ func TestGetChannelByID(t *testing.T) {
 			},
 		}
 
-		ytChannels, err := getChannelByID("Channel2", &cfg, &ytcl)
+		ytChannels, err := getChannelByID("Channel2", &cf, &ytcl)
 
 		if err != nil {
 			t.Error(err)
@@ -145,16 +146,12 @@ func TestGetChannelByID(t *testing.T) {
 	})
 
 	t.Run("getChannelByID should return an error when the channel loader returns an error", func(t *testing.T) {
-		cfg := config.Config{
-			VideoDirPath: "/a/path",
-		}
-
 		ytcl := collection.MockYTChannelLoad{
 			ReturnValue: nil,
 			ShouldError: true,
 		}
 
-		_, err := getChannelByID("someID", &cfg, &ytcl)
+		_, err := getChannelByID("someID", &cf, &ytcl)
 
 		if err == nil {
 			t.Error("Should have returned an error")
@@ -162,15 +159,11 @@ func TestGetChannelByID(t *testing.T) {
 	})
 
 	t.Run("getChannelByID should return a nil pointer when no YTChannel is found", func(t *testing.T) {
-		cfg := config.Config{
-			VideoDirPath: "/a/path",
-		}
-
 		ytcl := collection.MockYTChannelLoad{
 			ReturnValue: &map[string]collection.YTChannel{},
 		}
 
-		ytChannel, err := getChannelByID("something bad", &cfg, &ytcl)
+		ytChannel, err := getChannelByID("something bad", &cf, &ytcl)
 
 		if err != nil {
 			t.Error(err)
@@ -178,6 +171,44 @@ func TestGetChannelByID(t *testing.T) {
 
 		if ytChannel != nil {
 			t.Errorf("getChannelByID was expected to return a nil pointer. Got %+v", *ytChannel)
+		}
+	})
+}
+
+func CheckChannelUpdates(t *testing.T) {
+	t.Run("checkChannelUpdates returns correct respsonse", func(t *testing.T) {
+		response, err := checkChannelUpdates(
+			"Channel1",
+			&cf,
+			&collection.MockYTChannelLoad{
+				ReturnValue: &map[string]collection.YTChannel{
+					"Channel1": collection.MockYTChannel{
+						IName:         "Channel1",
+						IID:           "asdfasdf",
+						IRSSURL:       "http://testurl1",
+						IChannelURL:   "http://testurl1",
+						IArchivalMode: collection.ArchivalModeArchive,
+						ILocalVideos: &[]collection.Video{
+							collection.Video{
+								Path:     "/a/path/Channel1/The Macintosh LC-dCqJ6iPHus0.mp4",
+								ID:       "dCqJ6iPHus0",
+								FileType: "mp4",
+								BasePath: "/a/path",
+							},
+						},
+						ShouldErrorGetLocalVideos: false,
+					},
+				},
+			},
+			&youtubeapi.MockAPI{},
+		)
+
+		if err != nil {
+			t.Errorf("checkChannelUpdates returned an error %s", err)
+		}
+
+		if !reflect.DeepEqual(expectedResponse, *response) {
+			t.Errorf("checkChannelUpdates did not return correct response. Expected %+v, got %+v", expectedResponse, response)
 		}
 	})
 }

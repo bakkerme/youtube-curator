@@ -164,6 +164,19 @@ func TestGetVideosForChannel(t *testing.T) {
 		}
 	})
 
+	t.Run("getVideosForChannel returns error if HTTP response is not 200", func(t *testing.T) {
+		httpClient := utils.MockHTTPClient{
+			StatusCode: 500,
+			Body:       []byte(""),
+		}
+
+		_, err := getVideosForChannel(&ytc, &cf, &httpClient)
+
+		if err == nil {
+			t.Error("getVideosForChannel did not return expected error")
+		}
+	})
+
 	t.Run("getVideosForChannel returns error if HTTP response is invalid", func(t *testing.T) {
 		httpClient := utils.MockHTTPClient{
 			StatusCode: 200,

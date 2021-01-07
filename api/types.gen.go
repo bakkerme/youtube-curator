@@ -13,19 +13,19 @@ type Channel struct {
 
 // Job defines model for Job.
 type Job struct {
+	ID       float32 `json:"ID"`
 	Finished bool    `json:"finished"`
-	Id       float32 `json:"id"`
 	Running  bool    `json:"running"`
 	Type     string  `json:"type"`
 }
 
 // Video defines model for Video.
 type Video struct {
+	ID          string `json:"ID"`
 	Creator     string `json:"creator"`
 	Description string `json:"description"`
 	Duration    string `json:"duration"`
 	FileType    string `json:"fileType"`
-	Id          string `json:"id"`
 	Path        string `json:"path"`
 	PublishedAt string `json:"publishedAt"`
 	Title       string `json:"title"`
@@ -33,7 +33,7 @@ type Video struct {
 
 // Deleted defines model for deleted.
 type Deleted struct {
-	Id *string `json:"id,omitempty"`
+	ID *string `json:"ID,omitempty"`
 }
 
 // Error defines model for error.
