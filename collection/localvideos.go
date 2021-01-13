@@ -10,11 +10,11 @@ import (
 
 // GetVideoMetadata looks up the metadata for a given Video and returns a VideoWithMetadata
 // object containing all known information on the video, both Metadata and Video
-func GetVideoMetadata(video *Video) (*VideoWithMetadata, error) {
+func GetVideoMetadata(video *LocalVideo) (*LocalVideoWithMetadata, error) {
 	return getVideoMetadata(video, &videometadata.VideoMetadata{})
 }
 
-func getVideoMetadata(video *Video, vm videometadata.Provider) (*VideoWithMetadata, error) {
+func getVideoMetadata(video *LocalVideo, vm videometadata.Provider) (*LocalVideoWithMetadata, error) {
 	metadataProvider, err := getMetadataCommandProviderForFileType(video.Path)
 	if err != nil {
 		return nil, err
@@ -26,7 +26,7 @@ func getVideoMetadata(video *Video, vm videometadata.Provider) (*VideoWithMetada
 	}
 
 	mt := resp.Metadata
-	return &VideoWithMetadata{
+	return &LocalVideoWithMetadata{
 		*mt,
 		*video,
 	}, nil
@@ -56,11 +56,11 @@ func getMetadataCommandProviderForFileType(filetype string) (videometadata.Comma
 }
 
 // GetVideoByID finds a local Video file on disk with a provided ID
-func GetVideoByID(ID string, cf *config.Config) (*Video, error) {
+func GetVideoByID(ID string, cf *config.Config) (*LocalVideo, error) {
 	return getVideoByID(ID, cf, &YTChannelLoad{})
 }
 
-func getVideoByID(ID string, cf *config.Config, ytcl YTChannelLoader) (*Video, error) {
+func getVideoByID(ID string, cf *config.Config, ytcl YTChannelLoader) (*LocalVideo, error) {
 	videos, err := getAllLocalVideos(cf, ytcl)
 	if err != nil {
 		return nil, fmt.Errorf("Could not get Video with ID %s. Error %s", ID, err)
@@ -76,21 +76,21 @@ func getVideoByID(ID string, cf *config.Config, ytcl YTChannelLoader) (*Video, e
 }
 
 // GetAllLocalVideos returns a full list of Videos found locally
-func GetAllLocalVideos(cf *config.Config) (*[]Video, error) {
+func GetAllLocalVideos(cf *config.Config) (*[]LocalVideo, error) {
 	return getAllLocalVideos(cf, &YTChannelLoad{})
 }
 
-func getAllLocalVideos(cf *config.Config, ytcl YTChannelLoader) (*[]Video, error) {
+func getAllLocalVideos(cf *config.Config, ytcl YTChannelLoader) (*[]LocalVideo, error) {
 	channels, err := ytcl.GetAvailableYTChannels(cf)
 	if err != nil {
 		return nil, fmt.Errorf("Cannot get all YT Channels. Got error %s", err)
 	}
 
 	if channels == nil {
-		return &[]Video{}, nil
+		return &[]LocalVideo{}, nil
 	}
 
-	var videoList []Video
+	var videoList []LocalVideo
 	for chName, ch := range *channels {
 		v, err := ch.GetLocalVideos(cf)
 		if err != nil {

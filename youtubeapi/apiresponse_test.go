@@ -1,37 +1,54 @@
 package youtubeapi
 
 import (
-	"io/ioutil"
+	"hyperfocus.systems/youtube-curator-server/testutils"
 	"reflect"
 	"testing"
 )
 
 func TestConvertVideoAPIResponse(t *testing.T) {
 	t.Run("Correctly takes a JSON API response and parses it into expected VideoListResponse object", func(t *testing.T) {
-		file, err := ioutil.ReadFile("./testfiles/videorequest.json")
+		vl, err := convertAPIResponse(string(SearchResponseJSON), apiSearch)
 		if err != nil {
-			t.Errorf("Loading VideoRequest json failed: %s", err)
+			t.Errorf(testutils.UnexpectedError("convertAPIResponse", err))
 		}
 
-		vl, err := convertVideoAPIResponse(string(file))
-		if err != nil {
-			t.Errorf("convertVideoAPIResponse returned an error %s", err)
-		}
-
-		if !reflect.DeepEqual(*vl, vlExpectedFull) {
-			t.Errorf("VideoListResponse results are different.\nExpected %+v\ngot      %+v", vlExpectedFull, *vl)
+		if !reflect.DeepEqual(*vl, expectedSearchResponse) {
+			t.Errorf(testutils.MismatchError("convertAPIResponse", expectedSearchResponse, *vl))
 		}
 	})
 
 	t.Run("Throws an error when invalid JSON API response is entered", func(t *testing.T) {
-		_, err := convertVideoAPIResponse("")
+		_, err := convertAPIResponse("", apiSearch)
 		if err == nil {
-			t.Error("convertVideoAPIResponse did not return an error with invalid JSON")
+			t.Errorf(testutils.ExpectedError("convertAPIResponse"))
 		}
 
-		_, err = convertVideoAPIResponse("{{")
+		_, err = convertAPIResponse("{{", apiSearch)
 		if err == nil {
-			t.Error("convertVideoAPIResponse did not return an error with invalid JSON")
+			t.Errorf(testutils.ExpectedError("convertAPIResponse"))
+		}
+	})
+
+	t.Run("converts Video JSON correctly", func(t *testing.T) {
+		vl, err := convertAPIResponse(string(VideoResponseJSON), apiVideos)
+		if err != nil {
+			t.Errorf(testutils.UnexpectedError("convertAPIResponse", err))
+		}
+
+		if !reflect.DeepEqual(*vl, expectedVideoResponse) {
+			t.Errorf(testutils.MismatchError("convertAPIResponse", expectedSearchResponse, *vl))
+		}
+	})
+
+	t.Run("converts PlaylistItems JSON correctly", func(t *testing.T) {
+		vl, err := convertAPIResponse(string(PlaylistItemsResponseJSON), apiPlaylistItems)
+		if err != nil {
+			t.Errorf(testutils.UnexpectedError("convertAPIResponse", err))
+		}
+
+		if !reflect.DeepEqual(*vl, expectedPlaylistItemsResponse) {
+			t.Errorf(testutils.MismatchError("convertAPIResponse", expectedPlaylistItemsResponse, *vl))
 		}
 	})
 }

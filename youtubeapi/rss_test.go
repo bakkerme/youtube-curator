@@ -1,9 +1,7 @@
 package youtubeapi
 
 import (
-	"fmt"
 	"hyperfocus.systems/youtube-curator-server/utils"
-	"io/ioutil"
 	"reflect"
 	"testing"
 )
@@ -71,12 +69,7 @@ var rssExpect = RSS{
 
 func TestConvertRSSStringToRSS(t *testing.T) {
 	t.Run("Correctly takes RSS feed and parses into expected RSS object", func(t *testing.T) {
-		file, err := ioutil.ReadFile("./testfiles/test.xml")
-		if err != nil {
-			t.Errorf("Loading RSS feed xml failed: %s", err)
-		}
-
-		rss, err := convertRSSStringToRSS(string(file))
+		rss, err := convertRSSStringToRSS(VideoResponseRSSXML)
 		if err != nil {
 			t.Errorf("convertRSSStringToRSS returned an error %s", err)
 		}
@@ -104,8 +97,8 @@ func TestGetRSSFeed(t *testing.T) {
 		rss, err := GetRSSFeed(
 			"testurl.homebase",
 			&utils.MockHTTPClient{
-				StatusCode:   200,
-				BodyFilePath: "./testfiles/test.xml",
+				StatusCode: 200,
+				Body:       []byte(VideoResponseRSSXML),
 			},
 		)
 
@@ -132,7 +125,6 @@ func TestGetRSSFeed(t *testing.T) {
 	t.Run("GetRSSFeed returns an error if HTTP status code is not 200", func(t *testing.T) {
 		_, err := GetRSSFeed("testurl.homebase", &utils.MockHTTPClient{StatusCode: 400})
 
-		fmt.Println(err)
 		if err == nil {
 			t.Errorf("Expected GetRSSFeed would return an error")
 		}

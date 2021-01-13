@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"hyperfocus.systems/youtube-curator-server/collection"
 	"hyperfocus.systems/youtube-curator-server/config"
-	"io/ioutil"
 )
 
-// MockAPI mocks  access to the Youtube API
+// MockAPI mocks access to the Youtube API
 type MockAPI struct {
 	GetVideoMetadataResponse    *VideoMetadataResponse
 	GetVideoMetadataReturnError bool
@@ -27,12 +26,7 @@ func (ytAPI *MockAPI) GetVideoMetadata(ids *[]string, cf *config.Config) (*Video
 		return ytAPI.GetVideoMetadataResponse, nil
 	}
 
-	file, err := ioutil.ReadFile("./testfiles/videorequest.json")
-	if err != nil {
-		return nil, fmt.Errorf("Loading VideoRequest json failed: %s", err)
-	}
-
-	vl, err := convertVideoAPIResponse(string(file))
+	vl, err := convertAPIResponse(string(SearchResponseJSON), apiSearch)
 	if err != nil {
 		return nil, fmt.Errorf("convertVideoAPIResponse returned an error %s", err)
 	}
@@ -53,18 +47,34 @@ func (ytAPI *MockAPI) GetVideosForChannel(ytc collection.YTChannel, cf *config.C
 	}
 
 	if ytAPI.GetVideosForChannelReponse != nil {
-		return ytAPI.GetVideoMetadataResponse, nil
+		return ytAPI.GetVideosForChannelReponse, nil
 	}
 
-	file, err := ioutil.ReadFile("./testfiles/videorequest.json")
-	if err != nil {
-		return nil, fmt.Errorf("Loading VideoRequest json failed: %s", err)
-	}
-
-	vl, err := convertVideoAPIResponse(string(file))
+	vl, err := convertAPIResponse(string(SearchResponseJSON), apiSearch)
 	if err != nil {
 		return nil, fmt.Errorf("convertVideoAPIResponse returned an error %s", err)
 	}
 
 	return vl, nil
+}
+
+// GetVideoMockData returns the mock data that is used for API responses
+func GetVideoMockData() (*VideoMetadataResponse, error) {
+	vl, err := convertAPIResponse(string(SearchResponseJSON), apiSearch)
+	if err != nil {
+		return nil, fmt.Errorf("convertVideoAPIResponse returned an error %s", err)
+	}
+
+	return vl, nil
+}
+
+// GetVideoEmptyMockData returns empty mock data that is used for API responses
+func GetVideoEmptyMockData() (*VideoMetadataResponse, error) {
+	vl, err := convertAPIResponse(string(SearchResponseEmptyJSON), apiSearch)
+	if err != nil {
+		return nil, fmt.Errorf("convertVideoAPIResponse returned an error %s", err)
+	}
+
+	return vl, nil
+
 }

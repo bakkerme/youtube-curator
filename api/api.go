@@ -20,12 +20,12 @@ type YTAPI struct {
 func (yt *YTAPI) GetChannels(ctx echo.Context) error {
 	ytChannels, err := getChannels(yt.cfg, &collection.YTChannelLoad{})
 	if err != nil {
-		return fmt.Errorf("Could not get channels. Error %s ", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Could not get channels. %s", err))
 	}
 
 	resp, err := json.Marshal(ytChannels)
 	if err != nil {
-		return fmt.Errorf("Could not get channels. Error %s ", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Could not get channels. %s", err))
 	}
 
 	return ctx.String(http.StatusOK, string(resp))
@@ -46,6 +46,7 @@ func getChannels(cfg *config.Config, ytcl collection.YTChannelLoader) (*[]collec
 			IRSSURL:       ytChannel.RSSURL(),
 			IChannelURL:   ytChannel.ChannelURL(),
 			IArchivalMode: ytChannel.ArchivalMode(),
+			IChannelType:  ytChannel.ChannelType(),
 		})
 	}
 
@@ -57,6 +58,7 @@ func (yt *YTAPI) GetChannelByID(ctx echo.Context, channelID string) error {
 	ytChannel, err := getChannelByID(channelID, yt.cfg, &collection.YTChannelLoad{})
 	if err != nil {
 		return fmt.Errorf("Could not get channels. Error %s ", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Could not get channel %s. %s", channelID, err))
 	}
 
 	if ytChannel == nil {
@@ -65,7 +67,7 @@ func (yt *YTAPI) GetChannelByID(ctx echo.Context, channelID string) error {
 
 	resp, err := json.Marshal(ytChannel)
 	if err != nil {
-		return fmt.Errorf("Could not get channels. Error %s ", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Could not get channel %s. %s", channelID, err))
 	}
 
 	return ctx.String(http.StatusOK, string(resp))
@@ -91,12 +93,12 @@ func getChannelByID(id string, cfg *config.Config, ytcl collection.YTChannelLoad
 func (yt *YTAPI) CheckChannelUpdates(ctx echo.Context, channelID string) error {
 	videos, err := checkChannelUpdates(channelID, yt.cfg, &collection.YTChannelLoad{}, &youtubeapi.API{})
 	if err != nil {
-		return fmt.Errorf("Could not get channels. Error %s ", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Could not get channel update for %s. %s", channelID, err))
 	}
 
 	resp, err := json.Marshal(videos)
 	if err != nil {
-		return fmt.Errorf("Could not get channels. Error %s ", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Could not get channel update for %s. %s", channelID, err))
 	}
 
 	return ctx.String(http.StatusOK, string(resp))
@@ -109,6 +111,10 @@ func checkChannelUpdates(
 	ytAPI youtubeapi.APIRequester,
 ) (*[]Video, error) {
 	ytcInterface, err := getChannelByID(channelID, cfg, ytcl)
+	if ytcInterface == nil {
+		return nil, fmt.Errorf("Could not find provided channel with ID %s", channelID)
+	}
+
 	ytc := *ytcInterface
 	if err != nil {
 		return nil, err
@@ -124,18 +130,23 @@ func checkChannelUpdates(
 		return nil, fmt.Errorf("Could not get videos off disk for ytc %s, error %s", ytc.Name(), err)
 	}
 
-	remoteVideosToDownload := getEntriesNotInVideoList(&remoteVideos.Items, localVideos)
+	remoteVideosToDownload := getEntriesNotInVideoList(
+		&remoteVideos.Items,
+		localVideos,
+	)
 
-	var returnVideos []Video
+	var returnVideos []Video = []Video{}
 	for _, video := range *remoteVideosToDownload {
 		snippet := video.Snippet
 
 		returnVideos = append(returnVideos, Video{
-			Creator:     ytc.Name(),
-			Description: snippet.Description,
 			ID:          video.ID,
-			PublishedAt: snippet.PublishedAt,
 			Title:       snippet.Title,
+			Description: snippet.Description,
+			Creator:     ytc.Name(),
+			PublishedAt: snippet.PublishedAt,
+			Thumbnail:   snippet.Thumbnails.High.URL,
+			Path:        "https://www.youtube.com/watch?v=" + video.ID,
 		})
 	}
 
@@ -169,32 +180,32 @@ func (yt *YTAPI) GetJobs(ctx echo.Context, params GetJobsParams) error {
 
 // GetJobsSocket request
 func (yt *YTAPI) GetJobsSocket(ctx echo.Context, jobID string) error {
-	return fmt.Errorf("unimplemented")
+	return ctx.String(http.StatusNotImplemented, "Not Implemented")
 }
 
 // GetJobsByID request
 func (yt *YTAPI) GetJobsByID(ctx echo.Context, jobID string) error {
-	return fmt.Errorf("unimplemented")
+	return ctx.String(http.StatusNotImplemented, "Not Implemented")
 }
 
 // DeleteVideos deletes the videos
 func (yt *YTAPI) DeleteVideos(ctx echo.Context) error {
-	return fmt.Errorf("unimplemented")
+	return ctx.String(http.StatusNotImplemented, "Not Implemented")
 }
 
 // GetVideos request
 func (yt *YTAPI) GetVideos(ctx echo.Context, params GetVideosParams) error {
-	return fmt.Errorf("unimplemented")
+	return ctx.String(http.StatusNotImplemented, "Not Implemented")
 }
 
 // DownloadVideos starts a download Job for a video
 func (yt *YTAPI) DownloadVideos(ctx echo.Context) error {
-	return fmt.Errorf("unimplemented")
+	return ctx.String(http.StatusNotImplemented, "Not Implemented")
 }
 
 // DeleteVideoByID deletes one video ID
 func (yt *YTAPI) DeleteVideoByID(ctx echo.Context, videoID string, params DeleteVideoByIDParams) error {
-	return fmt.Errorf("unimplemented")
+	return ctx.String(http.StatusNotImplemented, "Not Implemented")
 }
 
 // GetVideoByID returns video data for a video ID
@@ -209,7 +220,7 @@ func (yt *YTAPI) GetVideoByID(ctx echo.Context, videoID string, params GetVideoB
 		return err
 	}
 
-	return fmt.Errorf("unimplemented")
+	return ctx.String(http.StatusBadRequest, "")
 }
 
 // Start sets up the API server
@@ -225,6 +236,9 @@ func Start() {
 
 	e := echo.New()
 	RegisterHandlers(e, &ytAPI)
+
+	// Set up thumbnail route
+	e.Static("thumbnail", cfg.VideoDirPath)
 
 	e.Logger.Fatal(e.Start(":3030"))
 }

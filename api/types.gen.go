@@ -28,6 +28,7 @@ type Video struct {
 	FileType    string `json:"fileType"`
 	Path        string `json:"path"`
 	PublishedAt string `json:"publishedAt"`
+	Thumbnail   string `json:"thumbnail"`
 	Title       string `json:"title"`
 }
 

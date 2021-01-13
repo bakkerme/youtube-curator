@@ -3,6 +3,7 @@ package collection
 import (
 	"fmt"
 	"hyperfocus.systems/youtube-curator-server/config"
+	"hyperfocus.systems/youtube-curator-server/testutils"
 	"hyperfocus.systems/youtube-curator-server/videometadata"
 	"hyperfocus.systems/youtube-curator-server/videometadata/mkvmetadata"
 	"hyperfocus.systems/youtube-curator-server/videometadata/mp4metadata"
@@ -23,11 +24,11 @@ func TestGetVideoMetadata(t *testing.T) {
 			t.Error(err)
 		}
 
-		video := Video{
-			Path:     "/a/path/Channel1/20201118 - Installing Red Hat Linux 8.0 on the $5 Windows 98 PC!-44E3kV_6p24.mkv",
+		video := LocalVideo{
+			Path:     mockVideoDirPath + "/Channel1/20201118 - Installing Red Hat Linux 8.0 on the $5 Windows 98 PC!-44E3kV_6p24.mkv",
 			ID:       "44E3kV_6p24",
 			FileType: "mkv",
-			BasePath: "/a/path/Channel1/",
+			BasePath: mockVideoDirPath + "/Channel1/",
 		}
 
 		mt := videometadata.Metadata{
@@ -38,7 +39,7 @@ func TestGetVideoMetadata(t *testing.T) {
 			Duration:    &duration,
 		}
 
-		expectedVWM := VideoWithMetadata{
+		expectedVWM := LocalVideoWithMetadata{
 			mt,
 			video,
 		}
@@ -64,11 +65,11 @@ func TestGetVideoMetadata(t *testing.T) {
 	})
 
 	t.Run("getVideoMetadata should return error if file type is not supported", func(t *testing.T) {
-		video := Video{
-			Path:     "/a/path/Channel1/20201118 - Installing Red Hat Linux 8.0 on the $5 Windows 98 PC!-44E3kV_6p24.asd",
+		video := LocalVideo{
+			Path:     mockVideoDirPath + "/Channel1/20201118 - Installing Red Hat Linux 8.0 on the $5 Windows 98 PC!-44E3kV_6p24.asd",
 			ID:       "44E3kV_6p24",
 			FileType: "asd",
-			BasePath: "/a/path/Channel1/",
+			BasePath: mockVideoDirPath + "/Channel1/",
 		}
 
 		_, err := getVideoMetadata(&video, &videometadata.VideoMetadata{})
@@ -78,11 +79,11 @@ func TestGetVideoMetadata(t *testing.T) {
 	})
 
 	t.Run("getVideoMetadata should return error if metadata provider fails", func(t *testing.T) {
-		video := Video{
-			Path:     "/a/path/Channel1/20201118 - Installing Red Hat Linux 8.0 on the $5 Windows 98 PC!-44E3kV_6p24.mkv",
+		video := LocalVideo{
+			Path:     mockVideoDirPath + "/Channel1/20201118 - Installing Red Hat Linux 8.0 on the $5 Windows 98 PC!-44E3kV_6p24.mkv",
 			ID:       "44E3kV_6p24",
 			FileType: "mkv",
-			BasePath: "/a/path/Channel1/",
+			BasePath: mockVideoDirPath + "/Channel1/",
 		}
 
 		mockVideoMetadata := videometadata.MockVideoMetadata{
@@ -148,31 +149,16 @@ func TestGetMetadataCommandProviderForFileType(t *testing.T) {
 
 func TestGetVideoByID(t *testing.T) {
 	t.Run("getVideoByID should return correct result", func(t *testing.T) {
-		path := "/test/pass/"
 		channel1 := "Channel1"
 		channel2 := "Channel2"
 
 		cf := &config.Config{
-			VideoDirPath: path,
+			VideoDirPath: mockVideoDirPath,
 		}
 
-		channel1Videos := []Video{
-			Video{
-				fmt.Sprintf("%s%s/%s", path, channel1, "20201118 - Installing Red Hat Linux 8.0 on the $5 Windows 98 PC!-44E3kV_6p24.mkv"),
-				"44E3kV_6p24",
-				"mp4",
-				path + channel1,
-			},
-		}
-
-		channel2Videos := []Video{
-			Video{
-				fmt.Sprintf("%s%s/%s", path, channel2, "20200622 - The US electrical system is not 120V-jMmUoZh3Hq4.mkv"),
-				"jMmUoZh3Hq4",
-				"mp4",
-				path + channel2,
-			},
-		}
+		localVideos := *GetVideoMockData()
+		channel1Videos := []LocalVideo{localVideos[0]}
+		channel2Videos := []LocalVideo{localVideos[1]}
 
 		ytcl := &MockYTChannelLoad{
 			ReturnValue: &map[string]YTChannel{
@@ -186,7 +172,7 @@ func TestGetVideoByID(t *testing.T) {
 					ShouldErrorGetLocalVideos: false,
 				},
 				"Channel2": MockYTChannel{
-					IName:                     channel1,
+					IName:                     channel2,
 					IID:                       "id123",
 					IRSSURL:                   "123abc.com",
 					IChannelURL:               "123abc.com",
@@ -197,44 +183,29 @@ func TestGetVideoByID(t *testing.T) {
 			},
 		}
 
-		video, err := getVideoByID("jMmUoZh3Hq4", cf, ytcl)
+		expectedVideo := channel2Videos[0]
+		video, err := getVideoByID(expectedVideo.ID, cf, ytcl)
 
 		if err != nil {
 			t.Errorf("getVideoByID returned an unexpected error %s", err)
 		}
 
-		expectedVideo := channel2Videos[0]
 		if !reflect.DeepEqual(*video, expectedVideo) {
-			t.Errorf("getVideoByID returned incorrect result. Expected\n%+vgot\n%+v", expectedVideo, *video)
+			t.Errorf(testutils.MismatchError("getVideoByID", expectedVideo, *video))
 		}
 	})
 
 	t.Run("getVideoByID should return nil if ID is not found", func(t *testing.T) {
-		path := "/test/pass/"
 		channel1 := "Channel1"
 		channel2 := "Channel2"
 
 		cf := &config.Config{
-			VideoDirPath: path,
+			VideoDirPath: mockVideoDirPath,
 		}
 
-		channel1Videos := []Video{
-			Video{
-				fmt.Sprintf("%s%s/%s", path, channel1, "20201118 - Installing Red Hat Linux 8.0 on the $5 Windows 98 PC!-44E3kV_6p24.mkv"),
-				"44E3kV_6p24",
-				"mp4",
-				path + channel1,
-			},
-		}
-
-		channel2Videos := []Video{
-			Video{
-				fmt.Sprintf("%s%s/%s", path, channel2, "20200622 - The US electrical system is not 120V-jMmUoZh3Hq4.mkv"),
-				"jMmUoZh3Hq4",
-				"mp4",
-				path + channel2,
-			},
-		}
+		localVideos := *GetVideoMockData()
+		channel1Videos := []LocalVideo{localVideos[0]}
+		channel2Videos := []LocalVideo{localVideos[1]}
 
 		ytcl := &MockYTChannelLoad{
 			ReturnValue: &map[string]YTChannel{
@@ -248,7 +219,7 @@ func TestGetVideoByID(t *testing.T) {
 					ShouldErrorGetLocalVideos: false,
 				},
 				"Channel2": MockYTChannel{
-					IName:                     channel1,
+					IName:                     channel2,
 					IID:                       "id123",
 					IRSSURL:                   "123abc.com",
 					IChannelURL:               "123abc.com",
@@ -272,7 +243,7 @@ func TestGetVideoByID(t *testing.T) {
 
 	t.Run("getVideoByID should return an error if it can't get all the videos", func(t *testing.T) {
 		cf := &config.Config{
-			VideoDirPath: "/a/path",
+			VideoDirPath: mockVideoDirPath,
 		}
 
 		ytcl := &MockYTChannelLoad{
@@ -289,27 +260,16 @@ func TestGetVideoByID(t *testing.T) {
 
 func TestGetAllLocalVideos(t *testing.T) {
 	t.Run("getAllLocalVideos should load the correct results", func(t *testing.T) {
-		path := "/test/pass/"
-		channel := "Channel1"
-		fileName := "The Macintosh LC-dCqJ6iPHus0.mp4"
-
 		cf := &config.Config{
-			VideoDirPath: path,
+			VideoDirPath: mockVideoDirPath,
 		}
 
-		expectedVideos := []Video{
-			Video{
-				fmt.Sprintf("%s%s/%s", path, channel, fileName),
-				"dCqJ6iPHus0",
-				"mp4",
-				path + channel,
-			},
-		}
+		expectedVideos := []LocalVideo{(*GetVideoMockData())[0]}
 
 		ytcl := &MockYTChannelLoad{
 			ReturnValue: &map[string]YTChannel{
 				"Channel1": MockYTChannel{
-					IName:                     channel,
+					IName:                     mockChannelName,
 					IID:                       "id123",
 					IRSSURL:                   "123abc.com",
 					IChannelURL:               "123abc.com",
@@ -333,7 +293,7 @@ func TestGetAllLocalVideos(t *testing.T) {
 
 	t.Run("getAllLocalVideos should error when the ytChannelLoader fails", func(t *testing.T) {
 		cf := &config.Config{
-			VideoDirPath: "/a/path",
+			VideoDirPath: mockVideoDirPath,
 		}
 
 		ytcl := &MockYTChannelLoad{
@@ -349,7 +309,7 @@ func TestGetAllLocalVideos(t *testing.T) {
 
 	t.Run("getAllLocalVideos should return an empty []Video when the channel loader has no channels", func(t *testing.T) {
 		cf := &config.Config{
-			VideoDirPath: "/a/path",
+			VideoDirPath: mockVideoDirPath,
 		}
 
 		ytcl := &MockYTChannelLoad{
@@ -369,41 +329,29 @@ func TestGetAllLocalVideos(t *testing.T) {
 
 	t.Run("getAllLocalVideos should return an error if any Channel can't load videos", func(t *testing.T) {
 		cf := &config.Config{
-			VideoDirPath: "/a/path",
+			VideoDirPath: mockVideoDirPath,
 		}
+
+		localVideos := []LocalVideo{(*GetVideoMockData())[0]}
 
 		ytcl := &MockYTChannelLoad{
 			ReturnValue: &map[string]YTChannel{
 				"Channel1": MockYTChannel{
-					IName:         "Channel1",
-					IID:           "id123",
-					IRSSURL:       "123abc.com",
-					IChannelURL:   "123abc.com",
-					IArchivalMode: ArchivalModeArchive,
-					ILocalVideos: &[]Video{
-						Video{
-							"Video1",
-							"dCqJ6iPHus0",
-							"mp4",
-							"/a/path",
-						},
-					},
+					IName:                     "Channel1",
+					IID:                       "id123",
+					IRSSURL:                   "123abc.com",
+					IChannelURL:               "123abc.com",
+					IArchivalMode:             ArchivalModeArchive,
+					ILocalVideos:              &localVideos,
 					ShouldErrorGetLocalVideos: false,
 				},
 				"Channel2": MockYTChannel{
-					IName:         "Channel2",
-					IID:           "id123",
-					IRSSURL:       "123abc.com",
-					IChannelURL:   "123abc.com",
-					IArchivalMode: ArchivalModeArchive,
-					ILocalVideos: &[]Video{
-						Video{
-							"Video1",
-							"dCqJ6iPHus0",
-							"mp4",
-							"/a/path",
-						},
-					},
+					IName:                     "Channel2",
+					IID:                       "id123",
+					IRSSURL:                   "123abc.com",
+					IChannelURL:               "123abc.com",
+					IArchivalMode:             ArchivalModeArchive,
+					ILocalVideos:              &localVideos,
 					ShouldErrorGetLocalVideos: true,
 				},
 			},

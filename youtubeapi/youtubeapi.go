@@ -18,6 +18,10 @@ type APIRequester interface {
 // API allows access to the Youtube API
 type API struct{}
 
+var apiVideos = "videos"
+var apiSearch = "search"
+var apiPlaylistItems = "playlistItems"
+
 // GetVideoMetadata gets information on the video whos IDs are provided from the Youtube API
 func (ytAPI *API) GetVideoMetadata(ids *[]string, cf *config.Config) (*VideoMetadataResponse, error) {
 	return getVideoMetadata(ids, cf, &utils.HTTPClient{})
@@ -29,16 +33,17 @@ func getVideoMetadata(ids *[]string, cf *config.Config, httpClient utils.YTCHTTP
 	}
 
 	values := map[string]string{
-		"part": "snippet",
-		"id":   strings.Join(*ids, ","),
+		"part":  "snippet",
+		"id":    strings.Join(*ids, ","),
+		"order": "date",
 	}
 
-	body, err := makeAPIRequest("videos", &values, getAccessKey(cf), httpClient)
+	body, err := makeAPIRequest(apiVideos, &values, getAccessKey(cf), httpClient)
 	if err != nil {
 		return nil, fmt.Errorf("Could not get Video Metadata from Youtube API. Error %s", err)
 	}
 
-	videoResponse, err := convertVideoAPIResponse(string(body))
+	videoResponse, err := convertAPIResponse(string(body), apiVideos)
 
 	if err != nil {
 		return nil, fmt.Errorf("Could not parse response from Youtube API for video ID %s. Responsed with %s. Error %s", ids, body, err)
@@ -49,22 +54,33 @@ func getVideoMetadata(ids *[]string, cf *config.Config, httpClient utils.YTCHTTP
 
 // GetVideosForChannel returns videos for a provided YT Channel from the YouTube API
 func (ytAPI *API) GetVideosForChannel(ytc collection.YTChannel, cf *config.Config) (*VideoMetadataResponse, error) {
-	return getVideosForChannel(ytc, cf, &utils.HTTPClient{})
+	return getVideosForChannel(ytc.ChannelType(), ytc, cf, &utils.HTTPClient{})
 }
 
-func getVideosForChannel(ytc collection.YTChannel, cf *config.Config, httpClient utils.YTCHTTPClient) (*VideoMetadataResponse, error) {
+func getVideosForChannel(channelType string, ytc collection.YTChannel, cf *config.Config, httpClient utils.YTCHTTPClient) (*VideoMetadataResponse, error) {
 	values := map[string]string{
-		"part":       "snippet",
-		"channelId":  ytc.ID(),
-		"maxResults": "15",
+		"part":  "snippet",
+		"order": "date",
 	}
 
-	body, err := makeAPIRequest("search", &values, getAccessKey(cf), httpClient)
+	api := ""
+	if channelType == collection.ChannelTypeChannel {
+		values["channelId"] = ytc.ID()
+		values["type"] = "video"
+		api = apiSearch
+	} else if channelType == collection.ChannelTypePlaylist {
+		values["playlistId"] = ytc.ID()
+		api = apiPlaylistItems
+	} else {
+		return nil, fmt.Errorf("Invalid Channel Type provided. Got %s", channelType)
+	}
+
+	body, err := makeAPIRequest(api, &values, getAccessKey(cf), httpClient)
 	if err != nil {
 		return nil, fmt.Errorf("Could not get Video Metadata from Youtube API for channel %s. Error %s", ytc.ID(), err)
 	}
 
-	videoResponse, err := convertVideoAPIResponse(string(body))
+	videoResponse, err := convertAPIResponse(string(body), api)
 
 	if err != nil {
 		return nil, fmt.Errorf("Could not parse response from Youtube API for chanel %s. Responsed with %s. Error %s", ytc.ID(), body, err)

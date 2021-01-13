@@ -2,33 +2,46 @@ package testutils
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"testing"
 	"time"
 )
 
-type mockFileInfo struct {
-	name  string
-	size  int64
-	isDir bool
+// MockFileInfo provides a mock for the FileInfo interface
+type MockFileInfo struct {
+	IName  string
+	ISize  int64
+	IIsDir bool
 }
 
-func (f mockFileInfo) Name() string {
-	return f.name
+// Name provides the name
+func (f MockFileInfo) Name() string {
+	return f.IName
 }
-func (f mockFileInfo) Size() int64 {
-	return f.size
+
+// Size provides the size
+func (f MockFileInfo) Size() int64 {
+	return f.ISize
 }
-func (f mockFileInfo) Mode() os.FileMode {
+
+// Mode provides the unix file permissions
+func (f MockFileInfo) Mode() os.FileMode {
 	return 0
 }
-func (f mockFileInfo) ModTime() time.Time {
+
+// ModTime provides the time of modification
+func (f MockFileInfo) ModTime() time.Time {
 	return time.Now()
 }
-func (f mockFileInfo) IsDir() bool {
-	return f.isDir
+
+// IsDir is a bool that specifies whether or not it's a directory
+func (f MockFileInfo) IsDir() bool {
+	return f.IIsDir
 }
-func (f mockFileInfo) Sys() interface{} {
+
+// Sys represents the underlying data source
+func (f MockFileInfo) Sys() interface{} {
 	return nil
 }
 
@@ -104,4 +117,19 @@ func (mdr *MockDirReader) GetHomeDirPath() string {
 	}
 
 	return *mdr.ReturnHomeDirPath
+}
+
+// MismatchError returns a readable error message that can be used when two values do not match
+func MismatchError(functionName string, expected interface{}, got interface{}) string {
+	return fmt.Sprintf("%s did not return expected results.\nExpected\n%+v\ngot\n%+v", functionName, expected, got)
+}
+
+// ExpectedError returns an error message that can be used when a function should have returned an error
+func ExpectedError(functionName string) string {
+	return fmt.Sprintf("%s should have returned an error", functionName)
+}
+
+// UnexpectedError returns an error message that can be used when a function should have returned an error
+func UnexpectedError(functionName string, err error) string {
+	return fmt.Sprintf("%s returned unexpected error %s", functionName, err)
 }

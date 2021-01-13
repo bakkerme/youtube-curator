@@ -24,6 +24,7 @@ var youtubeDLCommand = []string{
 	"--all-subs",
 	"--sub-format \"srt\"",
 	"--embed-subs",
+	"--write-thumbnail",
 	"--output \"%(upload_date)s - %(title)s-%(id)s.%(ext)s\"",
 	"--merge-output-format \"mkv\"",
 }

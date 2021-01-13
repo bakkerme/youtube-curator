@@ -331,44 +331,6 @@ components:
               ID:
                 type: string
   schemas:
-    Video:
-      description: Represents a video
-      type: object
-      properties:
-        path:
-          type: string
-          minLength: 1
-        ID:
-          type: string
-          minLength: 1
-        fileType:
-          type: string
-          minLength: 1
-        title:
-          type: string
-          minLength: 1
-        description:
-          type: string
-          minLength: 1
-        creator:
-          type: string
-          minLength: 1
-        publishedAt:
-          type: string
-          minLength: 1
-        duration:
-          type: string
-          minLength: 1
-      required:
-        - path
-        - ID
-        - fileType
-        - title
-        - description
-        - creator
-        - publishedAt
-        - duration
-      title: Video
     Job:
       description: Represents an ongoing job
       type: object
@@ -412,3 +374,47 @@ components:
         - rssURL
         - channelURL
         - archivalMode
+    Video:
+      description: Represents a video
+      type: object
+      title: Video
+      properties:
+        path:
+          type: string
+          minLength: 1
+        ID:
+          type: string
+          minLength: 1
+        fileType:
+          type: string
+          minLength: 1
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        creator:
+          type: string
+          minLength: 1
+        publishedAt:
+          type: string
+          minLength: 1
+        duration:
+          type: string
+          minLength: 1
+        thumbnail:
+          type: string
+          format: uri
+        '':
+          type: string
+      required:
+        - path
+        - ID
+        - fileType
+        - title
+        - description
+        - creator
+        - publishedAt
+        - duration
+        - thumbnail

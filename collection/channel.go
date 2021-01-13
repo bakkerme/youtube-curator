@@ -32,7 +32,7 @@ func getAvailableYTChannels(cf *config.Config, dr utils.DirReaderProvider) (*map
 		return nil, err
 	}
 	for _, dirEntry := range dirEntries {
-		if dirEntry.IsDir() {
+		if dirEntry.IsDir() && dirEntry.Name()[0] != '.' {
 			ytChannelConfig, err := getYTChannelConfigForDirPath(cf.VideoDirPath+dirEntry.Name()+"/config.json", dr)
 			if err != nil {
 				return nil, err
@@ -56,10 +56,52 @@ func getYTChannelConfigForDirPath(path string, dr utils.DirReaderProvider) (*YTC
 		return nil, fmt.Errorf("Can't unmarshal YT Channel config file. Looking for %s, got error %s", path, err)
 	}
 
+	if invalid := checkYTChannelConfig(&resp); invalid != nil {
+		return nil, fmt.Errorf("Channel config at %s is invalid. %s", path, invalid)
+	}
+
 	return &resp, nil
 }
 
-func getLocalVideos(channel YTChannel, cf *config.Config, dr utils.DirReaderProvider) (*[]Video, error) {
+func checkYTChannelConfig(ytc *YTChannelData) error {
+	invalidFields := []string{}
+
+	invalidFields = *appendIfInvalidYTC(ytc.Name(), "name", "notequal", &invalidFields, "")
+	invalidFields = *appendIfInvalidYTC(ytc.ID(), "id", "notequal", &invalidFields, "")
+	invalidFields = *appendIfInvalidYTC(ytc.RSSURL(), "rssURL", "notequal", &invalidFields, "")
+	invalidFields = *appendIfInvalidYTC(ytc.ChannelURL(), "channelURL", "notequal", &invalidFields, "")
+	invalidFields = *appendIfInvalidYTC(ytc.ArchivalMode(), "archivalMode", "equal", &invalidFields, ArchivalModeCurated, ArchivalModeArchive)
+	invalidFields = *appendIfInvalidYTC(ytc.ChannelType(), "channelType", "equal", &invalidFields, ChannelTypeChannel, ChannelTypePlaylist)
+
+	if len(invalidFields) > 0 {
+		return fmt.Errorf("%s fields invalid", strings.Join(invalidFields, ","))
+	}
+
+	return nil
+}
+
+func appendIfInvalidYTC(value string, field string, operation string, invalidFields *[]string, invalidCases ...string) *[]string {
+	match := false
+	for _, ic := range invalidCases {
+		if operation == "notequal" && value == ic {
+			result := append(*invalidFields, field)
+			return &result
+		}
+
+		if operation == "equal" && value == ic {
+			match = true
+		}
+	}
+
+	if operation == "equal" && !match {
+		result := append(*invalidFields, field)
+		return &result
+	}
+
+	return invalidFields
+}
+
+func getLocalVideos(channel YTChannel, cf *config.Config, dr utils.DirReaderProvider) (*[]LocalVideo, error) {
 	path := cf.VideoDirPath + channel.Name()
 	dirlist, err := dr.ReadDir(path)
 	if err != nil {
@@ -69,13 +111,16 @@ func getLocalVideos(channel YTChannel, cf *config.Config, dr utils.DirReaderProv
 	return getLocalVideosFromDirList(&dirlist, path)
 }
 
-func getLocalVideosFromDirList(dirlist *[]os.FileInfo, path string) (*[]Video, error) {
-	var videos []Video
+func getLocalVideosFromDirList(dirlist *[]os.FileInfo, path string) (*[]LocalVideo, error) {
+	var videos []LocalVideo
 	for _, file := range *dirlist {
 		valid, _ := isValidVideo(file.Name())
 
 		if valid {
 			videoPath := path + "/" + file.Name()
+
+			re := regexp.MustCompile(`(?m)\.(.*)$`)
+			thumbPath := path + "/" + string(re.ReplaceAll([]byte(file.Name()), []byte(".png")))
 
 			id, err := getVideoIDFromFileName(file.Name())
 			if err != nil {
@@ -87,11 +132,12 @@ func getLocalVideosFromDirList(dirlist *[]os.FileInfo, path string) (*[]Video, e
 				return nil, err
 			}
 
-			video := Video{
-				videoPath,
-				id,
-				extension,
-				path,
+			video := LocalVideo{
+				Path:      videoPath,
+				ID:        id,
+				FileType:  extension,
+				BasePath:  path,
+				Thumbnail: thumbPath,
 			}
 
 			videos = append(videos, video)
